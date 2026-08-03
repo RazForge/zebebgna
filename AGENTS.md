@@ -62,3 +62,7 @@ BOA extractor needs ChromeDriver (selenium).
   https://github.com/natahanjr/zebebgna.git
 - Web UI may be running as a hidden `py webapp.py` process on port 5000;
   kill it before renaming the project folder (Windows folder lock).
+
+## Session recovery
+- This project's main opencode session: `ses_038f259c8ffekamkUB930ADf3i`
+  (resume with `opencode -s <id>` or the `Zebegna.cmd` helper in the project root)
