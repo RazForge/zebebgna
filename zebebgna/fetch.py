@@ -1,7 +1,7 @@
 """Secure HTTP fetching with strict TLS verification and connection pooling.
 
 Unlike naive scraping utilities (which often ship with ``verify_ssl=False``
-shortcuts), every request made by zabagna goes through a hardened
+shortcuts), every request made by zebebgna goes through a hardened
 ``requests.Session`` that:
 
 - requires HTTPS (plain-HTTP receipt URLs are refused),
@@ -16,7 +16,7 @@ import requests
 
 DEFAULT_TIMEOUT = 15
 MAX_REDIRECTS = 5
-USER_AGENT = "zabagna/0.1 (defensive receipt verification agent)"
+USER_AGENT = "zebebgna/0.1 (defensive receipt verification agent)"
 
 
 class InsecureURLError(ValueError):

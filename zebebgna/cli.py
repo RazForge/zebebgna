@@ -1,9 +1,9 @@
-"""Command-line interface for zabagna."""
+"""Command-line interface for zebebgna."""
 
 import argparse
 import json
 
-from zabagna import audit_receipt_url, verify_receipt
+from zebebgna import audit_receipt_url, verify_receipt
 
 
 def _print_report(report):
@@ -17,7 +17,7 @@ def _print_report(report):
 def main():
     parser = argparse.ArgumentParser(
         description=(
-            "zabagna - defensive verification of Ethiopian bank "
+            "zebebgna - defensive verification of Ethiopian bank "
             "receipts and security auditing of receipt endpoints."
         )
     )

@@ -1,6 +1,6 @@
-# 🛡️ zabagna
+# 🛡️ zebebgna
 
-**ዘባንኛ — "guard"** · Defensive verification of Ethiopian bank receipts.
+**"guard"** · Defensive verification of Ethiopian bank receipts.
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -10,7 +10,7 @@
 
 ## 📌 About
 
-A receipt is only as trustworthy as its source. **zabagna** (Amharic for *guard*)
+A receipt is only as trustworthy as its source. **zebebgna** (Amharic for *guard*)
 is a cybersecurity toolkit that keeps fake and tampered receipts out of your
 hands. It extracts receipt data from six major Ethiopian banks and mobile money
 services — **CBE, Dashen, Awash, BOA, Zemen, and Telebirr** — then puts that
@@ -23,7 +23,7 @@ Two interfaces, one engine:
 - 🖥️ **CLI** — for developers and security teams
 - 🌐 **Web UI** — a simple browser form for non-technical users
 
-Zabagna is the defensive counterpart to naive receipt-scraping libraries —
+Zebebgna is the defensive counterpart to naive receipt-scraping libraries —
 it never trusts the receipt it fetches.
 
 ---
@@ -62,7 +62,7 @@ pip install -e .
 ### Full verification (extract + authenticity + transport audit)
 
 ```python
-from zabagna import verify_receipt
+from zebebgna import verify_receipt
 from pprint import pprint
 
 report = verify_receipt("cbe", "https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223")
@@ -83,7 +83,7 @@ report = verify_receipt("tele", "CHQ0FJ403O")
 ### Transport-only audit (no extraction)
 
 ```python
-from zabagna import audit_receipt_url
+from zebebgna import audit_receipt_url
 
 report = audit_receipt_url("https://example-receipt-host/abc123")
 ```
@@ -92,11 +92,11 @@ report = audit_receipt_url("https://example-receipt-host/abc123")
 
 ```bash
 # Full verification pipeline
-zabagna verify cbe "https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223"
-zabagna verify tele CHQ0FJ403O
+zebebgna verify cbe "https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223"
+zebebgna verify tele CHQ0FJ403O
 
 # Transport/URL security audit only
-zabagna audit "https://receipt.dashensuperapp.com/receipt/387ETAP2522000WK"
+zebebgna audit "https://receipt.dashensuperapp.com/receipt/387ETAP2522000WK"
 ```
 
 ## 🌐 Web UI (for non-technical users)
@@ -114,7 +114,7 @@ Pick the bank, paste the receipt link (or Telebirr ID), and get a color-coded ve
 **Hardening for shared use:** the app only fetches HTTPS URLs and, when set, respects an allowlist of hosts the server may fetch (SSRF guard):
 
 ```bash
-zabagna_ALLOWED_HOSTS="apps.cbe.com.et,transactioninfo.ethiotelecom.et" python webapp.py
+zebebgna_ALLOWED_HOSTS="apps.cbe.com.et,transactioninfo.ethiotelecom.et" python webapp.py
 ```
 
 If you expose the UI beyond your own machine, put it behind authentication (e.g. reverse proxy) and only allow hosts you trust.

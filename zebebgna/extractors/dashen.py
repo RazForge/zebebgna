@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pdfplumber
 
-from zabagna.fetch import fetcher
+from zebebgna.fetch import fetcher
 
 
 def extract_dashen_receipt_data(url):

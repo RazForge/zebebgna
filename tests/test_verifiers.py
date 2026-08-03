@@ -1,10 +1,10 @@
 import pytest
 from unittest import mock
 
-from zabagna import InsecureURLError, audit_receipt_url, verify_receipt
-from zabagna.fetch import fetcher
-from zabagna.report import VerificationReport
-from zabagna.verifiers import integrity, phishing, tls
+from zebebgna import InsecureURLError, audit_receipt_url, verify_receipt
+from zebebgna.fetch import fetcher
+from zebebgna.report import VerificationReport
+from zebebgna.verifiers import integrity, phishing, tls
 
 
 def finding_categories(report):
@@ -159,13 +159,13 @@ def test_verify_receipt_pipeline_end_to_end():
         integrity, "verify_integrity", return_value=None
     ) as vi:
         with mock.patch(
-            "zabagna.verifiers.tls.audit_tls", return_value=None
+            "zebebgna.verifiers.tls.audit_tls", return_value=None
         ), mock.patch.object(
             fetcher, "fetch_headers",
             side_effect=RuntimeError("offline"),
         ):
             with mock.patch.dict(
-                "zabagna.EXTRACTORS",
+                "zebebgna.EXTRACTORS",
                 {"cbe": mock.Mock(return_value=fake_data)},
             ):
                 report = verify_receipt("cbe", "https://receipt.example.com/r")

@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "zabagna"
+name = "zebebgna"
 version = "0.1.0"
 description = "Defensive cybersecurity toolkit for verifying Ethiopian bank receipt authenticity and auditing receipt endpoint security"
 readme = "README.md"
@@ -15,20 +15,20 @@ dependencies = [
     "beautifulsoup4",
     "selenium",
 ]
-authors = [{ name = "zabagna Contributors" }]
+authors = [{ name = "zebebgna Contributors" }]
 
 [tool.setuptools.packages.find]
-include = ["zabagna*"]
+include = ["zebebgna*"]
 
 [tool.setuptools.package-data]
-zabagna = ["templates/*.html"]
+zebebgna = ["templates/*.html"]
 
 [project.urls]
-Homepage = "https://github.com/natahanjr/zabagna"
+Homepage = "https://github.com/natahanjr/zebebgna"
 
 [project.optional-dependencies]
 dev = ["pytest"]
 web = ["flask"]
 
 [project.scripts]
-zabagna = "zabagna.cli:main"
+zebebgna = "zebebgna.cli:main"

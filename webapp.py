@@ -6,7 +6,7 @@ Run locally with:
     python webapp.py
     -> open http://127.0.0.1:5000
 
-Optional hardening: set zabagna_ALLOWED_HOSTS to a comma-separated
+Optional hardening: set zebebgna_ALLOWED_HOSTS to a comma-separated
 list of hostnames the server may fetch (SSRF guard). When unset, only
 HTTPS URLs are accepted (enforced by the secure fetcher).
 """
@@ -16,10 +16,10 @@ from urllib.parse import urlparse
 
 from flask import Flask, render_template, request
 
-from zabagna import verify_receipt
-from zabagna.fetch import InsecureURLError
+from zebebgna import verify_receipt
+from zebebgna.fetch import InsecureURLError
 
-PKG_DIR = os.path.dirname(os.path.abspath(__import__("zabagna").__file__))
+PKG_DIR = os.path.dirname(os.path.abspath(__import__("zebebgna").__file__))
 TEMPLATE_DIR = os.path.join(PKG_DIR, "templates")
 app = Flask(__name__, template_folder=TEMPLATE_DIR)
 
@@ -41,7 +41,7 @@ SEVERITY_LABELS = {
 
 ALLOWED_HOSTS = {
     h.strip().lower()
-    for h in os.environ.get("zabagna_ALLOWED_HOSTS", "").split(",")
+    for h in os.environ.get("zebebgna_ALLOWED_HOSTS", "").split(",")
     if h.strip()
 }
 

@@ -2,7 +2,7 @@
 
 from bs4 import BeautifulSoup
 
-from zabagna.fetch import fetcher
+from zebebgna.fetch import fetcher
 
 
 def extract_awash_receipt_data(url):

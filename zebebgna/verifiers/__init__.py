@@ -1,6 +1,6 @@
-"""Security verifiers used by zabagna's verification pipeline."""
+"""Security verifiers used by zebebgna's verification pipeline."""
 
-from zabagna.fetch import fetcher
+from zebebgna.fetch import fetcher
 
 from . import headers, integrity, phishing, tls
 

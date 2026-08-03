@@ -5,7 +5,7 @@ from typing import Dict
 
 from bs4 import BeautifulSoup
 
-from zabagna.fetch import fetcher
+from zebebgna.fetch import fetcher
 
 
 def extract_tele_receipt_data(url_or_id: str) -> Dict[str, str]:

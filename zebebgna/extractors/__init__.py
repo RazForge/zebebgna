@@ -1,6 +1,6 @@
 """Extractors for Ethiopian bank receipt formats.
 
-All extraction goes through :mod:`zabagna.fetch`'s ``SecureFetcher``,
+All extraction goes through :mod:`zebebgna.fetch`'s ``SecureFetcher``,
 which refuses plain-HTTP URLs and always verifies TLS certificates.
 """
 

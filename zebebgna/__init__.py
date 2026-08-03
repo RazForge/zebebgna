@@ -1,4 +1,4 @@
-"""zabagna - defensive verification of Ethiopian bank receipts.
+"""zebebgna - defensive verification of Ethiopian bank receipts.
 
 Public API:
     verify_receipt(bank, url_or_id) -> VerificationReport

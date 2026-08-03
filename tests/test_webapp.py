@@ -2,7 +2,7 @@ import pytest
 from unittest import mock
 
 import webapp
-from zabagna.report import VerificationReport
+from zebebgna.report import VerificationReport
 
 
 @pytest.fixture
@@ -74,7 +74,7 @@ def test_verify_renders_fail_verdict_for_critical(client):
 
 
 def test_host_allowlist_blocks_unknown(client, monkeypatch):
-    monkeypatch.setenv("zabagna_ALLOWED_HOSTS", "apps.cbe.com.et")
+    monkeypatch.setenv("zebebgna_ALLOWED_HOSTS", "apps.cbe.com.et")
     with mock.patch.object(webapp, "ALLOWED_HOSTS", {"apps.cbe.com.et"}):
         resp = client.post(
             "/verify",
