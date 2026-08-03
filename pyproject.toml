@@ -24,7 +24,7 @@ include = ["zabagna*"]
 zabagna = ["templates/*.html"]
 
 [project.urls]
-Homepage = "https://github.com/zabagna/zabagna"
+Homepage = "https://github.com/natahanjr/zabagna"
 
 [project.optional-dependencies]
 dev = ["pytest"]
