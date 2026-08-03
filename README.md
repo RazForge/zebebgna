@@ -1,8 +1,30 @@
 # 🛡️ zabagna
 
-**Defensive verification of Ethiopian bank receipts.**
+**ዘባንኛ — "guard"** · Defensive verification of Ethiopian bank receipts.
 
-`zabagna` is a cybersecurity-focused toolkit that verifies the **authenticity** of digital bank receipts (CBE, Dashen, Awash, BOA, Zemen, Telebirr) and **audits the security posture** of the endpoints that serve them. It is the defensive counterpart to naive receipt-scraping libraries — it never trusts the receipt it fetches.
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/tests-25%20passed-1a7f37)]()
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-0f172a)]()
+[![Banks](https://img.shields.io/badge/Banks-6%20supported-1d4ed8)]()
+
+## 📌 About
+
+A receipt is only as trustworthy as its source. **zabagna** (Amharic for *guard*)
+is a cybersecurity toolkit that keeps fake and tampered receipts out of your
+hands. It extracts receipt data from six major Ethiopian banks and mobile money
+services — **CBE, Dashen, Awash, BOA, Zemen, and Telebirr** — then puts that
+data on trial: it checks the serving website's security posture, flags phishing
+lookalikes, reconciles the amounts, and validates every reference number. The
+result is a clear, color-coded verdict: **Good, Needs review, or Problem found**.
+
+Two interfaces, one engine:
+
+- 🖥️ **CLI** — for developers and security teams
+- 🌐 **Web UI** — a simple browser form for non-technical users
+
+Zabagna is the defensive counterpart to naive receipt-scraping libraries —
+it never trusts the receipt it fetches.
 
 ---
 
