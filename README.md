@@ -1,4 +1,4 @@
-# 🛡️ zebebgna
+# 🛡️ Zebebgna
 
 **"guard"** · Defensive verification of Ethiopian bank receipts.
 
