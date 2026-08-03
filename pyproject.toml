@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zabagna"
+version = "0.1.0"
+description = "Defensive cybersecurity toolkit for verifying Ethiopian bank receipt authenticity and auditing receipt endpoint security"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+dependencies = [
+    "requests",
+    "pdfplumber",
+    "beautifulsoup4",
+    "selenium",
+]
+authors = [{ name = "zabagna Contributors" }]
+
+[tool.setuptools.packages.find]
+include = ["zabagna*"]
+
+[tool.setuptools.package-data]
+zabagna = ["templates/*.html"]
+
+[project.urls]
+Homepage = "https://github.com/zabagna/zabagna"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+web = ["flask"]
+
+[project.scripts]
+zabagna = "zabagna.cli:main"

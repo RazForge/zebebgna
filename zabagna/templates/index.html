@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zabagna - Receipt Verification</title>
+  <style>
+    :root {
+      --green: #1a7f37; --amber: #b45309; --red: #b91c1c;
+      --blue: #1d4ed8; --bg: #f4f6f8; --card: #ffffff; --text: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+    header {
+      background: #0f172a; color: #fff; padding: 18px 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    header .shield { font-size: 26px; }
+    header h1 { font-size: 20px; margin: 0; font-weight: 600; }
+    header p { margin: 2px 0 0; font-size: 13px; color: #cbd5e1; }
+    main { max-width: 860px; margin: 28px auto; padding: 0 16px; }
+    .card {
+      background: var(--card); border-radius: 12px;
+      padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    label { display: block; font-weight: 600; margin: 16px 0 6px; }
+    select, input[type="text"] {
+      width: 100%; padding: 12px 14px; font-size: 15px;
+      border: 1px solid #cbd5e1; border-radius: 8px; background: #fff;
+    }
+    button {
+      margin-top: 22px; width: 100%; padding: 14px; font-size: 16px;
+      font-weight: 700; color: #fff; background: var(--blue);
+      border: 0; border-radius: 8px; cursor: pointer;
+    }
+    button:hover { background: #1e40af; }
+    .help { font-size: 13px; color: #475569; margin-top: 8px; }
+    .error {
+      background: #fef2f2; color: var(--red); border: 1px solid #fecaca;
+      padding: 12px 14px; border-radius: 8px; margin-top: 18px;
+    }
+    .howto { font-size: 14px; color: #334155; line-height: 1.6; }
+    footer { text-align: center; font-size: 12px; color: #94a3b8; padding: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="shield">&#128737;</span>
+    <div>
+      <h1>Receipt Verification Tool</h1>
+      <p>Check that a bank receipt is genuine and safely delivered</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="howto">
+        <strong>How to use:</strong> choose the bank, paste the receipt link
+        (or the Telebirr receipt ID), then click <strong>Verify receipt</strong>.
+        The tool checks the website's security and whether the receipt looks
+        genuine, then shows a simple result: <strong>Good</strong>,
+        <strong>Needs review</strong>, or <strong>Problem found</strong>.
+      </div>
+
+      <form method="post" action="/verify">
+        <label for="bank">Bank</label>
+        <select id="bank" name="bank">
+          {% for key, name in banks.items() %}
+          <option value="{{ key }}">{{ name }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="url_or_id">Receipt link or Telebirr ID</label>
+        <input type="text" id="url_or_id" name="url_or_id" required
+               placeholder="https://...  (or for Telebirr: CHQ0FJ403O)">
+        <p class="help">
+          Example: https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223
+        </p>
+
+        <button type="submit">Verify receipt</button>
+      </form>
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+    </div>
+  </main>
+
+  <footer>Zabagna - defensive receipt verification. Only verify receipts you are entitled to see.</footer>
+</body>
+</html>

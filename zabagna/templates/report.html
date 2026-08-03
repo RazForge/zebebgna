@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Result - Receipt Verification</title>
+  <style>
+    :root {
+      --green: #1a7f37; --amber: #b45309; --red: #b91c1c; --gray: #475569;
+      --bg: #f4f6f8; --card: #ffffff; --text: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+    header {
+      background: #0f172a; color: #fff; padding: 18px 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    header .shield { font-size: 26px; }
+    header h1 { font-size: 20px; margin: 0; }
+    main { max-width: 860px; margin: 28px auto; padding: 0 16px; }
+    .card {
+      background: var(--card); border-radius: 12px; padding: 24px 28px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 20px;
+    }
+    .verdict {
+      display: flex; align-items: center; gap: 18px;
+      border-radius: 12px; padding: 20px 24px; color: #fff; margin-bottom: 20px;
+    }
+    .verdict .big { font-size: 24px; font-weight: 800; }
+    .verdict .sub { font-size: 14px; opacity: .92; margin-top: 2px; }
+    .verdict.pass  { background: var(--green); }
+    .verdict.review{ background: var(--amber); }
+    .verdict.fail  { background: var(--red); }
+    .verdict .score { margin-left: auto; text-align: right; font-size: 30px; font-weight: 800; }
+    h2 { font-size: 16px; margin: 0 0 12px; }
+    .finding {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 8px; margin-bottom: 8px;
+      background: #f8fafc; border: 1px solid #e2e8f0;
+    }
+    .badge {
+      min-width: 74px; text-align: center; padding: 4px 8px;
+      border-radius: 6px; color: #fff; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .3px; flex-shrink: 0;
+    }
+    .badge.critical { background: var(--red); }
+    .badge.error { background: #dc2626; }
+    .badge.warn { background: var(--amber); }
+    .badge.info { background: var(--gray); }
+    .finding .msg { font-size: 14px; line-height: 1.45; }
+    .finding .cat { font-size: 12px; color: #64748b; margin-left: auto; flex-shrink: 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    td, th { border-bottom: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+    th { color: #64748b; font-weight: 600; width: 42%; }
+    .empty { color: #94a3b8; font-style: italic; }
+    a { color: #1d4ed8; text-decoration: none; font-size: 14px; font-weight: 600; }
+    .link { margin-bottom: 14px; display: block; overflow-wrap: anywhere; font-size: 13px; color: #64748b; }
+    footer { text-align: center; font-size: 12px; color: #94a3b8; padding: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="shield">&#128737;</span>
+    <h1>Verification Result</h1>
+  </header>
+
+  <main>
+    <div class="verdict {{ report.status|lower }}">
+      <div>
+        <div class="big">
+          {% if report.status == "PASS" %}Good{% endif %}
+          {% if report.status == "REVIEW" %}Needs review{% endif %}
+          {% if report.status == "FAIL" %}Problem found{% endif %}
+        </div>
+        <div class="sub">
+          Bank: {{ bank_name }} &middot; Receipt: {{ report.bank|upper }}
+          {% if report.status == "PASS" %}&middot; the receipt looks genuine and the connection is secure{% endif %}
+          {% if report.status == "REVIEW" %}&middot; review the notes below before trusting this receipt{% endif %}
+          {% if report.status == "FAIL" %}&middot; do not trust this receipt until the issues are resolved{% endif %}
+        </div>
+      </div>
+      <div class="score">{{ report.score }}<span style="font-size:14px">/100</span></div>
+    </div>
+
+    <div class="link">Checked link: {{ report.url }}</div>
+
+    <div class="card">
+      <h2>Checks performed</h2>
+      {% for f in report.findings %}
+      <div class="finding">
+        <span class="badge {{ f.severity }}">{{ severity_labels[f.severity] }}</span>
+        <span class="msg">{{ f.message }}</span>
+        <span class="cat">{{ f.category }}</span>
+      </div>
+      {% else %}
+      <p class="empty">No issues found.</p>
+      {% endfor %}
+      <p style="margin-top:14px"><a href="/">&larr; Check another receipt</a></p>
+    </div>
+
+    <div class="card">
+      <h2>Receipt details</h2>
+      {% if report.data %}
+      <table>
+        {% for key, value in report.data.items() %}
+        <tr>
+          <th>{{ key }}</th>
+          <td>{{ value or "&#8212;" }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+      <p class="empty">No receipt details could be read from this link.</p>
+      {% endif %}
+    </div>
+  </main>
+
+  <footer>Zabagna - defensive receipt verification. Only verify receipts you are entitled to see.</footer>
+</body>
+</html>
