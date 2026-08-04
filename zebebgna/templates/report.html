@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Result - Receipt Verification</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}?v=2">
   <style>
     :root {
       --indigo: #4f46e5; --violet: #7c3aed;
@@ -174,7 +174,7 @@
 <body>
   <div class="topbar">
     <div class="topbar-inner">
-      <div class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="Zebebgna Logo"></div>
+      <div class="logo"><img src="{{ url_for('static', filename='logo.png') }}?v=2" alt="Zebebgna Logo"></div>
       <div>
         <div class="brand-name">Zebebgna</div>
         <div class="brand-tag">Verification Result &middot; {{ bank_name }}</div>

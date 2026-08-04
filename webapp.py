@@ -25,7 +25,7 @@ from zebebgna.verifiers import phishing
 PKG_DIR = os.path.dirname(os.path.abspath(__import__("zebebgna").__file__))
 TEMPLATE_DIR = os.path.join(PKG_DIR, "templates")
 STATIC_DIR = os.path.join(PKG_DIR, "static")
-app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path='/static')
 
 BANK_NAMES = {
     "cbe": "Commercial Bank of Ethiopia (CBE)",
