@@ -124,6 +124,50 @@ def test_report_score_and_status():
     assert report.score < 100
 
 
+def test_info_findings_do_not_penalize_score():
+    report = VerificationReport(url="https://example.com")
+    report.add_finding("info", "headers", "Missing security header: HSTS")
+    report.add_finding("info", "tls", "Certificate valid until 2030")
+    assert report.score == 100
+    assert report.status == "PASS"
+
+
+def test_missing_receipt_data_collapses_score():
+    report = VerificationReport(url="https://apps.cbe.com.et:100/?id=FT123", bank="cbe")
+    report.add_finding("info", "tls", "Certificate valid until 2030")
+    assert report.score == 0
+    assert report.status == "FAIL"
+
+
+def test_integrity_error_collapses_score():
+    report = VerificationReport(url="https://apps.cbe.com.et:100/?id=FT123", bank="cbe", data={"status": "SUCCESS"})
+    report.add_finding(
+        "error", "integrity",
+        "CBE total debited mismatch: 1000.00 + 25.00 + 3.75 sums to 1028.75 "
+        "but receipt states 999.00",
+    )
+    assert report.score == 0
+    assert report.status == "FAIL"
+
+
+def test_integrity_warn_does_not_collapse_score():
+    report = VerificationReport(url="https://apps.cbe.com.et:100/?id=FT123", bank="cbe", data={"status": "SUCCESS"})
+    report.add_finding("warn", "integrity", "Receipt data is incomplete; missing fields: payer_name")
+    assert report.score == 90
+    assert report.status == "PASS"
+
+
+# ---------------------------------------------------------------- headers
+
+def test_missing_headers_are_informational_not_warnings():
+    report = VerificationReport(url="https://example.com")
+    from zebebgna.verifiers import headers as headers_verifier
+    headers_verifier.audit_headers({"Server": "nginx"}, report)
+    assert all(f.severity == "info" for f in report.findings)
+    assert report.score == 100
+    assert report.status == "PASS"
+
+
 # ------------------------------------------------------------------- fetch
 
 def test_fetch_refuses_plain_http():

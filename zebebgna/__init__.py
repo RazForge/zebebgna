@@ -7,6 +7,7 @@ Public API:
 
 from .extractors import EXTRACTORS
 from .fetch import InsecureURLError, SecureFetcher, fetcher
+from .fusion import Correlation, ThreatAssessment, assess
 from .report import Finding, VerificationReport
 
 __version__ = "0.1.0"
@@ -16,17 +17,22 @@ __all__ = [
     "audit_receipt_url",
     "VerificationReport",
     "Finding",
+    "ThreatAssessment",
+    "Correlation",
+    "assess",
     "InsecureURLError",
     "SecureFetcher",
 ]
 
 
-def verify_receipt(bank, url_or_id):
+def verify_receipt(bank, url_or_id, feedback=None):
     """Fetch, extract, and verify a receipt's authenticity and security.
 
     Args:
         bank (str): one of cbe, dashen, awash, boa, zemen, tele.
         url_or_id (str): receipt URL, or a bare Telebirr receipt ID.
+        feedback (tuple, optional): ``(confirmed, rejected)`` prior user
+            verdicts for the same domain, nudging the fused risk score.
 
     Returns:
         VerificationReport: extracted data plus severity-tagged findings.
@@ -51,15 +57,17 @@ def verify_receipt(bank, url_or_id):
 
     from .verifiers import run_verifiers
 
-    run_verifiers(report)
+    run_verifiers(report, feedback=feedback)
     return report
 
 
-def audit_receipt_url(url):
+def audit_receipt_url(url, feedback=None):
     """Run a transport/URL-level security audit without extracting receipt data.
 
     Args:
         url (str): receipt endpoint URL.
+        feedback (tuple, optional): ``(confirmed, rejected)`` prior user
+            verdicts for the same domain, nudging the fused risk score.
 
     Returns:
         VerificationReport: URL, TLS, and headers findings only.
@@ -78,4 +86,5 @@ def audit_receipt_url(url):
         report.add_finding("error", "fetch", f"Could not fetch endpoint: {exc}")
         fetched_headers = None
     headers_verifier.audit_headers(fetched_headers, report)
+    report.threat = assess(report, feedback=feedback)
     return report

@@ -4,65 +4,147 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Zebebgna - Receipt Verification</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234f46e5'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Segoe UI Emoji'%3E%F0%9F%9B%A1%3C/text%3E%3C/svg%3E">
   <style>
     :root {
-      --green: #1a7f37; --amber: #b45309; --red: #b91c1c;
-      --blue: #1d4ed8; --bg: #f4f6f8; --card: #ffffff; --text: #1f2937;
+      --indigo: #4f46e5; --indigo-dark: #4338ca; --violet: #7c3aed;
+      --ink: #0f172a; --muted: #64748b; --faint: #94a3b8;
+      --bg: #f6f7fb; --card: #ffffff; --line: #e7e9f2;
+      --green: #059669; --amber: #d97706; --orange: #ea580c; --red: #dc2626;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .06);
+      --shadow-md: 0 4px 10px rgba(15, 23, 42, .06), 0 12px 32px rgba(15, 23, 42, .08);
     }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      margin: 0; font-family: "Segoe UI", Arial, sans-serif;
-      background: var(--bg); color: var(--text);
+      margin: 0; font-family: "Segoe UI Variable", "Segoe UI", -apple-system,
+        BlinkMacSystemFont, Roboto, Inter, Arial, sans-serif;
+      background: var(--bg); color: var(--ink);
+      -webkit-font-smoothing: antialiased;
     }
-    header {
-      background: #0f172a; color: #fff; padding: 18px 24px;
+    .topbar {
+      background: rgba(255, 255, 255, .82); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-inner {
+      max-width: 900px; margin: 0 auto; padding: 12px 24px;
       display: flex; align-items: center; gap: 12px;
     }
-    header .shield { font-size: 26px; }
-    header h1 { font-size: 20px; margin: 0; font-weight: 600; }
-    header p { margin: 2px 0 0; font-size: 13px; color: #cbd5e1; }
-    main { max-width: 860px; margin: 28px auto; padding: 0 16px; }
-    .card {
-      background: var(--card); border-radius: 12px;
-      padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    .logo {
+      width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px; box-shadow: 0 4px 12px rgba(79, 70, 229, .35);
     }
-    label { display: block; font-weight: 600; margin: 16px 0 6px; }
+    .brand-name { font-weight: 800; font-size: 16px; letter-spacing: -.2px; }
+    .brand-tag { font-size: 11.5px; color: var(--muted); margin-top: -2px; }
+    .navlink {
+      margin-left: auto; font-size: 13px; font-weight: 600; color: var(--indigo);
+      text-decoration: none;
+    }
+    .navlink:hover { text-decoration: underline; }
+    main { max-width: 900px; margin: 0 auto; padding: 36px 24px 10px; }
+    .hero { text-align: center; margin-bottom: 30px; }
+    .hero h1 {
+      font-size: 34px; margin: 0; letter-spacing: -1px; font-weight: 800;
+      background: linear-gradient(120deg, var(--ink) 30%, var(--indigo));
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p { color: var(--muted); font-size: 15px; margin: 10px 0 0; }
+    .card {
+      background: var(--card); border-radius: 18px; padding: 30px 34px;
+      box-shadow: var(--shadow-md); border: 1px solid var(--line);
+      animation: rise .45s ease both;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .steps {
+      display: flex; gap: 10px; justify-content: center; margin-bottom: 26px;
+      flex-wrap: wrap;
+    }
+    .step {
+      font-size: 12.5px; font-weight: 600; color: var(--muted);
+      background: #f1f2f9; border: 1px solid var(--line);
+      padding: 7px 14px; border-radius: 999px;
+    }
+    .step b {
+      width: 20px; height: 20px; border-radius: 50%; display: inline-flex;
+      align-items: center; justify-content: center; background: var(--indigo);
+      color: #fff; font-size: 11px; margin-right: 7px;
+    }
+    label { display: block; font-weight: 700; font-size: 13px; margin: 0 0 7px; letter-spacing: .1px; }
     select, input[type="text"] {
-      width: 100%; padding: 12px 14px; font-size: 15px;
-      border: 1px solid #cbd5e1; border-radius: 8px; background: #fff;
+      width: 100%; padding: 14px 16px; font-size: 15px; color: var(--ink);
+      border: 1.5px solid #d8dbe8; border-radius: 12px; background: #fff;
+      transition: border-color .15s, box-shadow .15s;
+      font-family: inherit;
+    }
+    select:focus, input[type="text"]:focus {
+      outline: none; border-color: var(--indigo);
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, .13);
     }
     button {
-      margin-top: 22px; width: 100%; padding: 14px; font-size: 16px;
-      font-weight: 700; color: #fff; background: var(--blue);
-      border: 0; border-radius: 8px; cursor: pointer;
+      margin-top: 26px; width: 100%; padding: 16px; font-size: 15.5px;
+      font-weight: 800; color: #fff; border: 0; border-radius: 12px;
+      cursor: pointer; letter-spacing: .2px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      box-shadow: 0 8px 20px rgba(79, 70, 229, .32);
+      transition: transform .12s, box-shadow .12s, filter .12s;
+      font-family: inherit;
     }
-    button:hover { background: #1e40af; }
-    .help { font-size: 13px; color: #475569; margin-top: 8px; }
+    button:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 12px 26px rgba(79, 70, 229, .4); }
+    button:active { transform: translateY(0); }
+    .help { font-size: 12.5px; color: var(--faint); margin: 9px 0 0; }
+    .help code {
+      background: #f1f2f9; border: 1px solid var(--line); padding: 1.5px 7px;
+      border-radius: 6px; font-size: 12px; color: #475569;
+      font-family: "Cascadia Code", Consolas, monospace;
+    }
     .error {
-      background: #fef2f2; color: var(--red); border: 1px solid #fecaca;
-      padding: 12px 14px; border-radius: 8px; margin-top: 18px;
+      background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;
+      padding: 13px 17px; border-radius: 12px; margin-top: 22px; font-size: 14px;
+      display: flex; gap: 10px; align-items: flex-start;
     }
-    .howto { font-size: 14px; color: #334155; line-height: 1.6; }
-    footer { text-align: center; font-size: 12px; color: #94a3b8; padding: 24px; }
+    .error::before { content: "\26A0"; font-weight: 800; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; justify-content: center; }
+    .chip {
+      font-size: 12px; color: #475569; background: #f1f2f9;
+      border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .chip svg { flex-shrink: 0; }
+    footer {
+      text-align: center; font-size: 12px; color: var(--faint);
+      padding: 34px 24px 44px; max-width: 900px; margin: 0 auto;
+    }
+    @media (max-width: 600px) {
+      .card { padding: 24px 20px; }
+      .hero h1 { font-size: 27px; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <span class="shield">&#128737;</span>
-    <div>
-      <h1>Receipt Verification Tool</h1>
-      <p>Check that a bank receipt is genuine and safely delivered</p>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">&#128737;</div>
+      <div>
+        <div class="brand-name">Zebebgna</div>
+        <div class="brand-tag">receipt authenticity guard</div>
+      </div>
+      <a class="navlink" href="/history">History</a>
     </div>
-  </header>
+  </div>
 
   <main>
+    <div class="hero">
+      <h1>Is this bank receipt real?</h1>
+      <p>Paste the receipt link, get a clear verdict &mdash; plus a fused threat picture of the endpoint.</p>
+    </div>
+
     <div class="card">
-      <div class="howto">
-        <strong>How to use:</strong> choose the bank, paste the receipt link
-        (or the Telebirr receipt ID), then click <strong>Verify receipt</strong>.
-        The tool checks the website's security and whether the receipt looks
-        genuine, then shows a simple result: <strong>Good</strong>,
-        <strong>Needs review</strong>, or <strong>Problem found</strong>.
+      <div class="steps">
+        <span class="step"><b>1</b>Choose the bank</span>
+        <span class="step"><b>2</b>Paste the receipt link</span>
+        <span class="step"><b>3</b>Get your verdict</span>
       </div>
 
       <form method="post" action="/verify">
@@ -73,15 +155,22 @@
           {% endfor %}
         </select>
 
-        <label for="url_or_id">Receipt link or Telebirr ID</label>
+        <label for="url_or_id" style="margin-top:22px">Receipt link or Telebirr ID</label>
         <input type="text" id="url_or_id" name="url_or_id" required
                placeholder="https://...  (or for Telebirr: CHQ0FJ403O)">
         <p class="help">
-          Example: https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223
+          Example: <code>https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223</code>
         </p>
 
         <button type="submit">Verify receipt</button>
       </form>
+
+      <div class="chips">
+        <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Phishing &amp; lookalike domains</span>
+        <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>TLS certificate</span>
+        <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Receipt math</span>
+        <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Threat fusion</span>
+      </div>
 
       {% if error %}
       <div class="error">{{ error }}</div>
@@ -89,6 +178,6 @@
     </div>
   </main>
 
-  <footer>Zebebgna - defensive receipt verification. Only verify receipts you are entitled to see.</footer>
+  <footer>Zebebgna &middot; defensive receipt verification. Only verify receipts you are entitled to see.</footer>
 </body>
 </html>

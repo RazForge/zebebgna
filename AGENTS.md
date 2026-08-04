@@ -17,8 +17,25 @@ file first to recall the full context before doing any work on it.
 - Runs 4 verifier groups (`zebebgna/verifiers/`): phishing (URL heuristics),
   TLS (cert chain/hostname/expiry), security headers (HSTS/CSP/XFO/etc.),
   integrity (amount math, reference formats, status, completeness)
+- Threat-fusion engine (`zebebgna/fusion.py`): correlates weak signals across
+  verifier groups into attack scenarios (lookalike phishing infra, forged
+  receipts, weak hardening) with a fused 0-100 risk score + risk level
+  (LOW/MEDIUM/HIGH/CRITICAL) and indicators; deterministic rule table, no
+  external feeds; attached to every report as `report.threat`
+  (Python API: `zebebgna.fusion.assess(report)`)
 - Produces a `VerificationReport` with 0–100 score and PASS / REVIEW / FAIL verdict
   (any critical finding forces FAIL)
+- History + feedback loop (`zebebgna/history.py`): every check can be stored
+  in SQLite (`ZEBEBGNA_DB` env var, default `~/.zebebgna/checks.db`); CLI
+  `history`/`feedback` commands, web `/history` pages with thumbs up/down;
+  per-domain feedback (`(confirmed, rejected)`) nudges the fused risk score
+  via `assess(report, feedback=...)` (delta: -10 if >=3 rejections outweigh
+  confirmations, +5 if vice versa; exposed as `feedback_adjustment`). The
+  feedback loop is deterministic, capped, and never lifts an unreadable
+  receipt off 0.
+- Batch verification: `zebebgna batch <bank> <urls...>` / `--file urls.txt`
+  (JSON array output); all CLI verify/audit/batch runs auto-save unless
+  `--no-save`.
 - Never fetches plain HTTP — `SecureFetcher` (zebebgna/fetch.py) enforces HTTPS +
   strict TLS verification (the original project had `verify_ssl=False`; we removed that)
 
@@ -50,7 +67,11 @@ BOA extractor needs ChromeDriver (selenium).
 3. Templates live inside the package (`zebebgna/templates/`) so wheels work;
    `pyproject.toml` pins `[tool.setuptools.packages.find]` and package-data.
 4. Web UI serves non-technical users: pick bank → paste receipt link → verdict.
-5. Scoring: info=-2, warn=-10, error=-20, critical=-40; >=85 PASS, 55–84 REVIEW, <55 FAIL.
+5. Scoring: info=0 (notes never penalize a genuine receipt), warn=-10,
+   error=-20, critical=-40; >=85 PASS, 55–84 REVIEW, <55 FAIL. Missing
+   security headers are reported as informational notes (server posture,
+   not receipt authenticity). Receipt-data failures (empty extraction or
+   integrity error/critical findings) force score 0 / FAIL.
 6. Tests use mocked network (no live receipt endpoints in the suite).
 7. PDF docs generated with Edge headless; keep `docs/Zebebgna-Documentation.html`
    as the editable source.

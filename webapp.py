@@ -12,12 +12,14 @@ HTTPS URLs are accepted (enforced by the secure fetcher).
 """
 
 import os
+import re
 from urllib.parse import urlparse
 
-from flask import Flask, render_template, request
+from flask import Flask, redirect, render_template, request, url_for
 
 from zebebgna import verify_receipt
 from zebebgna.fetch import InsecureURLError
+from zebebgna.verifiers import phishing
 
 PKG_DIR = os.path.dirname(os.path.abspath(__import__("zebebgna").__file__))
 TEMPLATE_DIR = os.path.join(PKG_DIR, "templates")
@@ -39,6 +41,15 @@ SEVERITY_LABELS = {
     "info": "Note",
 }
 
+HEADER_SHORT = {
+    "Strict-Transport-Security": "HSTS",
+    "Content-Security-Policy": "CSP",
+    "X-Frame-Options": "X-Frame-Options",
+    "X-Content-Type-Options": "X-Content-Type-Options",
+    "Referrer-Policy": "Referrer-Policy",
+    "Permissions-Policy": "Permissions-Policy",
+}
+
 ALLOWED_HOSTS = {
     h.strip().lower()
     for h in os.environ.get("zebebgna_ALLOWED_HOSTS", "").split(",")
@@ -58,6 +69,94 @@ def _normalize_url(bank, url_or_id):
     if not url.startswith("http") and bank == "tele":
         url = f"https://transactioninfo.ethiotelecom.et/receipt/{url_or_id}"
     return url
+
+
+def _domain_feedback(url):
+    host = (urlparse(url).hostname or "").lower()
+    if not host:
+        return None
+    from zebebgna import history
+
+    return history.domain_feedback(phishing._registered_domain(host))
+
+
+def _report_context(report):
+    """Compute everything the report template needs from a report."""
+    summary, issues = _summarize_findings(report)
+    threat_correlations = (
+        [c for c in report.threat.correlations if c.severity in STRONG_SEVERITIES]
+        if report.threat else []
+    )
+    threat_pin = (
+        RISK_PIN.get(report.threat.risk_level, 12) if report.threat else None
+    )
+    return {
+        "threat": report.threat,
+        "threat_correlations": threat_correlations,
+        "threat_pin": threat_pin,
+        "summary": summary,
+        "issues": issues,
+    }
+
+
+def _summarize_findings(report):
+    """Collapse informational notes into short per-topic lines.
+
+    Returns (summary, issues) where ``summary`` is a list of
+    (category, title, short_text) tuples and ``issues`` keeps every
+    warn/error/critical finding with its full message.
+    """
+    infos = [f for f in report.findings if f.severity == "info"]
+    issues = [f for f in report.findings if f.severity != "info"]
+
+    summary = []
+
+    tls_msgs = [f.message for f in infos if f.category == "tls"]
+    if tls_msgs:
+        parts = []
+        for msg in tls_msgs:
+            m = re.search(
+                r"Certificate valid until (.*?) \((\d+) days remaining\)", msg
+            )
+            if m:
+                raw_date = m.group(1)
+                date = " ".join(
+                    t for t in raw_date.split() if ":" not in t
+                )
+                parts.append(
+                    f"valid until {date} ({m.group(2)} days left)"
+                )
+                continue
+            m = re.search(r"TLS (.+?) - issued by: (.+)$", msg)
+            if m:
+                parts.append(f"TLS {m.group(1)} issued by {m.group(2)}")
+                continue
+            parts.append(msg)
+        summary.append(("tls", "TLS & certificate", "; ".join(parts)))
+
+    header_msgs = [f.message for f in infos if f.category == "headers"]
+    if header_msgs:
+        missing = []
+        present = []
+        for msg in header_msgs:
+            if msg.startswith("Missing security header: "):
+                name = msg[len("Missing security header: "):]
+                missing.append(HEADER_SHORT.get(name, name))
+            else:
+                present.append(msg)
+        parts = []
+        if missing:
+            parts.append(f"{len(missing)} missing: {', '.join(missing)}")
+        if present:
+            parts.append("core security headers present")
+        summary.append(("headers", "Security headers", "; ".join(parts)))
+
+    return summary, issues
+
+
+STRONG_SEVERITIES = ("error", "high", "critical")
+
+RISK_PIN = {"LOW": 12, "MEDIUM": 45, "HIGH": 75, "CRITICAL": 95}
 
 
 @app.route("/")
@@ -93,7 +192,9 @@ def verify():
         )
 
     try:
-        report = verify_receipt(bank, url_or_id)
+        report = verify_receipt(
+            bank, url_or_id, feedback=_domain_feedback(url)
+        )
     except (ValueError, InsecureURLError) as exc:
         return render_template(
             "index.html", banks=BANK_NAMES, error=f"Could not verify: {exc}"
@@ -107,12 +208,55 @@ def verify():
             ),
         )
 
-    return render_template(
-        "report.html",
+    from zebebgna import history
+
+    report.check_id = history.record(report)
+    context = _report_context(report)
+    context.update(
         report=report,
         bank_name=BANK_NAMES.get(report.bank, report.bank),
         severity_labels=SEVERITY_LABELS,
     )
+    return render_template("report.html", **context)
+
+
+@app.route("/history")
+def history_page():
+    from zebebgna import history
+
+    rows = history.list_checks(limit=100)
+    return render_template("history.html", checks=rows)
+
+
+@app.route("/history/<int:check_id>")
+def history_view(check_id):
+    from zebebgna import history
+
+    check = history.get_check(check_id)
+    if not check:
+        return render_template(
+            "history.html", checks=history.list_checks(limit=100),
+            error=f"No stored check with id {check_id}.",
+        )
+    report = history.report_from_record(check)
+    context = _report_context(report)
+    context.update(
+        report=report,
+        check_id=check["id"],
+        bank_name=BANK_NAMES.get(report.bank, report.bank or "audit"),
+        severity_labels=SEVERITY_LABELS,
+    )
+    return render_template("report.html", **context)
+
+
+@app.route("/history/<int:check_id>/feedback", methods=["POST"])
+def history_feedback(check_id):
+    from zebebgna import history
+
+    ok = request.form.get("ok")
+    if ok in ("1", "0"):
+        history.record_feedback(check_id, ok == "1")
+    return redirect(url_for("history_page"))
 
 
 if __name__ == "__main__":

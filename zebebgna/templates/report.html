@@ -4,70 +4,185 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Result - Receipt Verification</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234f46e5'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Segoe UI Emoji'%3E%F0%9F%9B%A1%3C/text%3E%3C/svg%3E">
   <style>
     :root {
-      --green: #1a7f37; --amber: #b45309; --red: #b91c1c; --gray: #475569;
-      --bg: #f4f6f8; --card: #ffffff; --text: #1f2937;
+      --indigo: #4f46e5; --violet: #7c3aed;
+      --ink: #0f172a; --muted: #64748b; --faint: #94a3b8;
+      --bg: #f6f7fb; --card: #ffffff; --line: #e7e9f2;
+      --green: #059669; --amber: #d97706; --orange: #ea580c; --red: #dc2626;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .06);
+      --shadow-md: 0 4px 10px rgba(15, 23, 42, .06), 0 12px 32px rgba(15, 23, 42, .08);
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0; font-family: "Segoe UI", Arial, sans-serif;
-      background: var(--bg); color: var(--text);
+      margin: 0; font-family: "Segoe UI Variable", "Segoe UI", -apple-system,
+        BlinkMacSystemFont, Roboto, Inter, Arial, sans-serif;
+      background: var(--bg); color: var(--ink);
+      -webkit-font-smoothing: antialiased;
     }
-    header {
-      background: #0f172a; color: #fff; padding: 18px 24px;
+    .topbar {
+      background: rgba(255, 255, 255, .82); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-inner {
+      max-width: 920px; margin: 0 auto; padding: 12px 24px;
       display: flex; align-items: center; gap: 12px;
     }
-    header .shield { font-size: 26px; }
-    header h1 { font-size: 20px; margin: 0; }
-    main { max-width: 860px; margin: 28px auto; padding: 0 16px; }
-    .card {
-      background: var(--card); border-radius: 12px; padding: 24px 28px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 20px;
+    .logo {
+      width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      display: flex; align-items: center; justify-content: center; font-size: 19px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, .35);
     }
+    .brand-name { font-weight: 800; font-size: 16px; letter-spacing: -.2px; }
+    .brand-tag { font-size: 11.5px; color: var(--muted); margin-top: -2px; }
+    .backlink { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--indigo); text-decoration: none; }
+    .backlink:hover { text-decoration: underline; }
+    main { max-width: 920px; margin: 0 auto; padding: 30px 24px 10px; }
+
+    /* verdict hero */
     .verdict {
-      display: flex; align-items: center; gap: 18px;
-      border-radius: 12px; padding: 20px 24px; color: #fff; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 24px; color: #fff;
+      border-radius: 20px; padding: 26px 30px; margin-bottom: 16px;
+      box-shadow: var(--shadow-md);
+      animation: rise .45s ease both;
     }
-    .verdict .big { font-size: 24px; font-weight: 800; }
-    .verdict .sub { font-size: 14px; opacity: .92; margin-top: 2px; }
-    .verdict.pass  { background: var(--green); }
-    .verdict.review{ background: var(--amber); }
-    .verdict.fail  { background: var(--red); }
-    .verdict .score { margin-left: auto; text-align: right; font-size: 30px; font-weight: 800; }
-    h2 { font-size: 16px; margin: 0 0 12px; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .verdict.pass  { background: linear-gradient(135deg, #059669, #10b981); }
+    .verdict.review{ background: linear-gradient(135deg, #d97706, #f59e0b); }
+    .verdict.fail  { background: linear-gradient(135deg, #dc2626, #f87171); }
+    .verdict .big { font-size: 28px; font-weight: 800; letter-spacing: -.3px; }
+    .verdict .sub { font-size: 13.5px; opacity: .94; margin-top: 4px; line-height: 1.55; }
+    .ring { margin-left: auto; flex-shrink: 0; position: relative; width: 96px; height: 96px; }
+    .ring svg { transform: rotate(-90deg); }
+    .ring .track { stroke: rgba(255,255,255,.28); }
+    .ring .bar { stroke: #fff; stroke-linecap: round; }
+    .ring .num {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .ring .num .n { font-size: 25px; font-weight: 800; line-height: 1; }
+    .ring .num .u { font-size: 9.5px; opacity: .85; letter-spacing: 1px; margin-top: 3px; }
+
+    /* cards */
+    .card {
+      background: var(--card); border-radius: 18px; padding: 26px 30px;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--line);
+      margin-bottom: 16px; animation: rise .45s ease both;
+    }
+    .card:nth-child(2) { animation-delay: .06s; }
+    .card:nth-child(3) { animation-delay: .12s; }
+    .card:nth-child(4) { animation-delay: .18s; }
+    h2 {
+      font-size: 12.5px; margin: 0 0 16px; letter-spacing: 1.1px;
+      text-transform: uppercase; color: var(--muted); font-weight: 800;
+      display: flex; align-items: center; gap: 9px;
+    }
+    h2 .ico { width: 26px; height: 26px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+    h2 .ico.blue { background: #eef2ff; }
+    h2 .ico.purple { background: #f5f3ff; }
+    h2 .ico.cyan { background: #ecfeff; }
+    .link {
+      font-size: 13px; color: var(--muted); margin-bottom: 16px; overflow-wrap: anywhere;
+      background: #f8f9fc; border: 1px solid var(--line); border-radius: 12px;
+      padding: 12px 16px; display: flex; gap: 10px; align-items: baseline;
+    }
+    .link b { color: var(--ink); white-space: nowrap; }
+    .link code { font-family: "Cascadia Code", Consolas, monospace; font-size: 12.5px; word-break: break-all; }
+
+    /* threat card */
+    .riskrow { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+    .riskrow .cap { font-size: 13px; color: var(--muted); }
+    .riskpill {
+      padding: 6px 16px; border-radius: 999px; color: #fff; font-size: 12px;
+      font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
+      box-shadow: var(--shadow-sm);
+    }
+    .riskpill.LOW { background: var(--green); }
+    .riskpill.MEDIUM { background: var(--green); }
+    .riskpill.HIGH { background: var(--red); }
+    .riskpill.CRITICAL { background: var(--red); }
+    .riskpill.unreadable { background: var(--red); box-shadow: 0 0 0 4px rgba(220, 38, 38, .18); }
+    .meter { flex: 1; min-width: 160px; position: relative; height: 8px; background: #eceef6; border-radius: 999px; overflow: visible; }
+    .meter .fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--green), var(--amber) 50%, var(--red)); }
+    .meter .pin {
+      position: absolute; top: -4px; width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; border: 3px solid var(--ink); transform: translateX(-50%);
+      box-shadow: var(--shadow-sm);
+    }
+    .scenario {
+      font-size: 14px; line-height: 1.6; background: #fffbeb;
+      border: 1px solid #fde68a; border-radius: 12px; padding: 13px 17px; margin: 0;
+    }
+    .scenario b { color: #92400e; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    td, th { border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; width: 40%; }
+    tr:last-child td, tr:last-child th { border-bottom: 0; }
+    .subcat { font-size: 10.5px; color: var(--faint); margin-top: 3px; font-family: "Cascadia Code", Consolas, monospace; }
+    .sig { font-size: 11.5px; color: var(--muted); }
+    .sev { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .6px; }
+    .sev-red { background: #fee2e2; color: var(--red); }
+    .sev-green { background: #dcfce7; color: var(--green); }
+    .empty { color: var(--faint); font-style: italic; font-size: 13.5px; margin: 4px 0; }
+
+    /* findings */
     .finding {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 12px; border-radius: 8px; margin-bottom: 8px;
-      background: #f8fafc; border: 1px solid #e2e8f0;
+      display: flex; align-items: center; gap: 13px;
+      padding: 12px 15px; border-radius: 12px; margin-bottom: 8px;
+      background: #f8f9fc; border: 1px solid var(--line);
+      transition: transform .12s, box-shadow .12s;
     }
-    .badge {
-      min-width: 74px; text-align: center; padding: 4px 8px;
-      border-radius: 6px; color: #fff; font-size: 12px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .3px; flex-shrink: 0;
+    .finding:hover { transform: translateX(2px); box-shadow: var(--shadow-sm); }
+    .finding .icon {
+      width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800; color: #fff;
     }
-    .badge.critical { background: var(--red); }
-    .badge.error { background: #dc2626; }
-    .badge.warn { background: var(--amber); }
-    .badge.info { background: var(--gray); }
-    .finding .msg { font-size: 14px; line-height: 1.45; }
-    .finding .cat { font-size: 12px; color: #64748b; margin-left: auto; flex-shrink: 0; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    td, th { border-bottom: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
-    th { color: #64748b; font-weight: 600; width: 42%; }
-    .empty { color: #94a3b8; font-style: italic; }
-    a { color: #1d4ed8; text-decoration: none; font-size: 14px; font-weight: 600; }
-    .link { margin-bottom: 14px; display: block; overflow-wrap: anywhere; font-size: 13px; color: #64748b; }
-    footer { text-align: center; font-size: 12px; color: #94a3b8; padding: 24px; }
+    .finding .icon.critical { background: var(--red); }
+    .finding .icon.error { background: #ef4444; }
+    .finding .icon.warn { background: var(--amber); }
+    .finding .icon.info { background: #94a3b8; }
+    .finding .msg { font-size: 13.5px; line-height: 1.5; }
+    .finding.info-line { background: #f8fafc; }
+    .finding.info-line .msg b { color: #334155; }
+    .finding .cat {
+      font-size: 10.5px; color: var(--faint); margin-left: auto; flex-shrink: 0;
+      text-transform: uppercase; letter-spacing: .6px; font-weight: 700;
+      background: #eceef6; padding: 4px 9px; border-radius: 6px;
+    }
+    .btn {
+      display: inline-block; color: #fff; text-decoration: none;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      font-size: 13.5px; font-weight: 700; padding: 12px 22px; border-radius: 11px;
+      box-shadow: 0 6px 16px rgba(79, 70, 229, .3); margin-top: 4px;
+      transition: transform .12s, box-shadow .12s;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 9px 20px rgba(79, 70, 229, .38); }
+    footer { text-align: center; font-size: 12px; color: var(--faint); padding: 30px 24px 44px; }
+    @media (max-width: 620px) {
+      .verdict { flex-wrap: wrap; }
+      .ring { margin-left: 0; }
+      .card { padding: 22px 20px; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <span class="shield">&#128737;</span>
-    <h1>Verification Result</h1>
-  </header>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">&#128737;</div>
+      <div>
+        <div class="brand-name">Zebebgna</div>
+        <div class="brand-tag">Verification Result &middot; {{ bank_name }}</div>
+      </div>
+      <a class="backlink" href="/history">History</a>
+      <a class="backlink" style="margin-left:16px" href="/">&#8592; New check</a>
+    </div>
+  </div>
 
   <main>
+    {% set sv = 251.33 %}
     <div class="verdict {{ report.status|lower }}">
       <div>
         <div class="big">
@@ -76,33 +191,88 @@
           {% if report.status == "FAIL" %}Problem found{% endif %}
         </div>
         <div class="sub">
-          Bank: {{ bank_name }} &middot; Receipt: {{ report.bank|upper }}
+          Bank: {{ bank_name }}
           {% if report.status == "PASS" %}&middot; the receipt looks genuine and the connection is secure{% endif %}
           {% if report.status == "REVIEW" %}&middot; review the notes below before trusting this receipt{% endif %}
           {% if report.status == "FAIL" %}&middot; do not trust this receipt until the issues are resolved{% endif %}
         </div>
       </div>
-      <div class="score">{{ report.score }}<span style="font-size:14px">/100</span></div>
+      <div class="ring">
+        <svg width="96" height="96" viewBox="0 0 96 96">
+          <circle class="track" cx="48" cy="48" r="40" fill="none" stroke-width="8"/>
+          <circle class="bar" cx="48" cy="48" r="40" fill="none" stroke-width="8"
+                  stroke-dasharray="{{ sv }}" stroke-dashoffset="{{ sv * (1 - report.score / 100) }}"/>
+        </svg>
+        <div class="num">
+          <div class="n">{{ report.score }}</div>
+          <div class="u">/ 100</div>
+        </div>
+      </div>
     </div>
 
-    <div class="link">Checked link: {{ report.url }}</div>
+    <div class="link"><b>Checked link:</b> <code>{{ report.url }}</code></div>
 
+    {% if threat %}
     <div class="card">
-      <h2>Checks performed</h2>
-      {% for f in report.findings %}
+      <h2><span class="ico purple">&#9889;</span>Threat intelligence</h2>
+      <div class="riskrow">
+        <span class="cap">Fused risk from correlated signals</span>
+        <span class="riskpill {{ threat.risk_level }}{% if threat.unreadable %} unreadable{% endif %}">{{ threat.risk_level }}</span>
+        <div class="meter">
+          <div class="fill"></div>
+          <div class="pin" style="left: {{ threat_pin }}%"></div>
+        </div>
+      </div>
+      {% if threat.scenario %}
+      <p class="scenario"><b>Most likely scenario:</b> {{ threat.scenario }}</p>
+      {% endif %}
+      {% if threat_correlations %}
+      <table>
+        <tr><th>Correlated signal</th><th>Severity</th><th>Signals involved</th></tr>
+        {% for c in threat_correlations %}
+        <tr>
+          <td>{{ c.title }}<div class="subcat">{{ c.rule_id }}</div></td>
+          <td>
+            <span class="sev {% if c.severity in ("critical", "high", "error") %}sev-red{% else %}sev-green{% endif %}">
+              {% if c.severity in ("critical", "high", "error") %}HIGH{% else %}LOW{% endif %}
+            </span>
+          </td>
+          <td class="sig">{{ c.signals | join(", ") }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+      <p class="empty">No correlated threat signals; the endpoint profile looks consistent with a legitimate bank service.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if issues %}
+    <div class="card">
+      <h2><span class="ico blue">&#128737;</span>Checks performed</h2>
+      {% if summary %}
+      {% for cat, title, text in summary %}
+      <div class="finding info-line">
+        <span class="icon info">&#9432;</span>
+        <span class="msg"><b>{{ title }}:</b> {{ text }}</span>
+        <span class="cat">{{ cat }}</span>
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% for f in issues %}
       <div class="finding">
-        <span class="badge {{ f.severity }}">{{ severity_labels[f.severity] }}</span>
+        <span class="icon {{ f.severity }}">
+          {% if f.severity == "critical" %}&#10005;{% elif f.severity == "error" %}&#33;{% elif f.severity == "warn" %}&#9888;{% else %}&#9432;{% endif %}
+        </span>
         <span class="msg">{{ f.message }}</span>
         <span class="cat">{{ f.category }}</span>
       </div>
-      {% else %}
-      <p class="empty">No issues found.</p>
       {% endfor %}
-      <p style="margin-top:14px"><a href="/">&larr; Check another receipt</a></p>
     </div>
+    {% endif %}
 
     <div class="card">
-      <h2>Receipt details</h2>
+      <h2><span class="ico cyan">&#128196;</span>Receipt details</h2>
       {% if report.data %}
       <table>
         {% for key, value in report.data.items() %}
@@ -116,8 +286,10 @@
       <p class="empty">No receipt details could be read from this link.</p>
       {% endif %}
     </div>
+
+    <a class="btn" href="/">&larr; Check another receipt</a>
   </main>
 
-  <footer>Zebebgna - defensive receipt verification. Only verify receipts you are entitled to see.</footer>
+  <footer>Zebebgna &middot; defensive receipt verification. Only verify receipts you are entitled to see.</footer>
 </body>
 </html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zebebgna Documentation</title>
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 20mm 18mm;
+    @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 9pt; color: #64748b; font-family: "Segoe UI", Arial, sans-serif; }
+    @bottom-left { content: "Zebebgna Documentation"; font-size: 9pt; color: #64748b; font-family: "Segoe UI", Arial, sans-serif; }
+  }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #1f2937; font-size: 10.5pt; line-height: 1.55; margin: 0; }
+  .cover { text-align: center; padding-top: 120pt; page-break-after: always; }
+  .cover .shield { font-size: 56pt; }
+  .cover h1 { font-size: 40pt; margin: 12pt 0 4pt; letter-spacing: 1px; }
+  .cover .tagline { font-size: 15pt; color: #475569; }
+  .cover .meta { margin-top: 40pt; font-size: 11pt; color: #64748b; }
+  h1 { font-size: 22pt; color: #0f172a; border-bottom: 3px solid #1d4ed8; padding-bottom: 6pt; margin: 28pt 0 12pt; page-break-after: avoid; }
+  h2 { font-size: 14pt; color: #1d4ed8; margin: 20pt 0 8pt; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; color: #0f172a; margin: 14pt 0 6pt; page-break-after: avoid; }
+  p { margin: 6pt 0; }
+  code { font-family: Consolas, "Courier New", monospace; background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 9.5pt; }
+  pre { font-family: Consolas, "Courier New", monospace; background: #0f172a; color: #e2e8f0; padding: 10pt 12pt; border-radius: 6px; font-size: 9pt; line-height: 1.45; overflow-x: hidden; white-space: pre-wrap; page-break-inside: avoid; }
+  pre code { background: none; padding: 0; color: inherit; }
+  table { border-collapse: collapse; width: 100%; font-size: 9.5pt; margin: 8pt 0; page-break-inside: avoid; }
+  th { background: #0f172a; color: #fff; text-align: left; padding: 6pt 8pt; }
+  td { border: 1px solid #e2e8f0; padding: 5pt 8pt; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  ul, ol { margin: 6pt 0; padding-left: 20pt; }
+  li { margin: 3pt 0; }
+  .note { background: #eff6ff; border-left: 4px solid #1d4ed8; padding: 8pt 12pt; border-radius: 4pt; margin: 10pt 0; }
+  .warn { background: #fffbeb; border-left: 4px solid #b45309; padding: 8pt 12pt; border-radius: 4pt; margin: 10pt 0; }
+  .toc { page-break-after: always; }
+  .toc h1 { border-bottom: none; }
+  .toc ol { list-style: none; padding-left: 0; }
+  .toc li { margin: 5pt 0; font-size: 11pt; }
+  .toc .lvl2 { padding-left: 18pt; font-size: 10pt; color: #475569; }
+  .badge { display: inline-block; background: #1d4ed8; color: #fff; border-radius: 3px; padding: 1px 7px; font-size: 8.5pt; font-weight: 700; text-transform: uppercase; }
+  .badge.green { background: #1a7f37; }
+  .badge.amber { background: #b45309; }
+  .badge.red { background: #b91c1c; }
+  .grid { display: flex; gap: 10pt; }
+  .card { border: 1px solid #e2e8f0; border-radius: 6pt; padding: 10pt 12pt; width: 50%; }
+  .card h3 { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<div class="cover">
+  <div class="shield">&#128737;</div>
+  <h1>Zebebgna</h1>
+  <div class="tagline">&#8220;Guard&#8221; &mdash; Defensive verification of Ethiopian bank receipts</div>
+  <div class="meta">
+    Version 0.1.0<br>
+    Cybersecurity toolkit &middot; CLI + Web UI<br>
+    CBE &middot; Dashen &middot; Awash &middot; BOA &middot; Zemen &middot; Telebirr<br><br>
+    https://github.com/natahanjr/zebebgna
+  </div>
+</div>
+
+<!-- ================= TOC ================= -->
+<div class="toc">
+  <h1>Table of Contents</h1>
+  <ol>
+    <li>1. About Zebebgna</li>
+    <li>2. Features</li>
+    <li>3. Scope &amp; Ethics</li>
+    <li>4. Architecture</li>
+    <li>5. Installation</li>
+    <li>6. Command-Line Interface (CLI)
+      <div class="lvl2">6.1 Verify a receipt &middot; 6.2 Audit an endpoint &middot; 6.3 Sample output</div>
+    </li>
+    <li>7. Python API
+      <div class="lvl2">7.1 verify_receipt &middot; 7.2 audit_receipt_url &middot; 7.3 VerificationReport &amp; Finding</div>
+    </li>
+    <li>8. Web UI for Non-Technical Users
+      <div class="lvl2">8.1 Running &middot; 8.2 Hardening for shared use</div>
+    </li>
+    <li>9. Security Checks Reference
+      <div class="lvl2">9.1 URL / phishing &middot; 9.2 TLS &middot; 9.3 Security headers &middot; 9.4 Integrity</div>
+    </li>
+    <li>10. Risk Scoring &amp; Verdicts</li>
+    <li>11. Supported Banks &amp; Reference Formats</li>
+    <li>12. Testing</li>
+    <li>13. Project Structure</li>
+    <li>14. Limitations &amp; Deployment Notes</li>
+    <li>15. License</li>
+  </ol>
+</div>
+
+<!-- ================= 1. ABOUT ================= -->
+<h1>1. About Zebebgna</h1>
+<p>
+A receipt is only as trustworthy as its source. <strong>Zebebgna</strong> (Amharic for <em>guard</em>)
+is a cybersecurity toolkit that keeps fake and tampered receipts out of your hands. It extracts
+receipt data from six major Ethiopian banks and mobile-money services &mdash;
+<strong>CBE, Dashen, Awash, BOA, Zemen, and Telebirr</strong> &mdash; then puts that data on trial:
+</p>
+<ul>
+  <li>It checks the serving website&rsquo;s security posture (TLS, certificates, security headers).</li>
+  <li>It flags phishing lookalikes and suspicious URLs before they are trusted.</li>
+  <li>It reconciles amounts, validates reference numbers, and verifies transaction status.</li>
+  <li>It produces a clear, color-coded verdict: <strong>Good</strong>, <strong>Needs review</strong>, or <strong>Problem found</strong>.</li>
+</ul>
+<p>Zebebgna is the defensive counterpart to naive receipt-scraping libraries &mdash; it never trusts
+the receipt it fetches, and it never disables security checks to make a connection work.</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>&#128421; CLI</h3>
+    <p>For developers and security teams. One command to verify a receipt or audit an endpoint, with
+    machine-readable JSON output.</p>
+  </div>
+  <div class="card">
+    <h3>&#127760; Web UI</h3>
+    <p>For non-technical users. A simple browser form: choose the bank, paste the receipt link,
+    get a color-coded verdict with a list of checks.</p>
+  </div>
+</div>
+
+<!-- ================= 2. FEATURES ================= -->
+<h1>2. Features</h1>
+<table>
+  <tr><th style="width:30%">Feature</th><th>Description</th></tr>
+  <tr><td>&#128274; Strict TLS everywhere</td><td>Every fetch verifies the certificate chain. Plain-HTTP URLs are refused; the insecure <code>verify_ssl=False</code> shortcuts common in scrapers are never used.</td></tr>
+  <tr><td>&#127907; Phishing detection</td><td>Flags raw-IP hosts, lookalike domains (typosquatting against known bank domains), punycode hosts, URL shorteners, and non-standard ports.</td></tr>
+  <tr><td>&#128220; TLS certificate audit</td><td>Chain validation, hostname coverage (SAN), expiry warnings, and issuer reporting.</td></tr>
+  <tr><td>&#129518; Security headers audit</td><td>Checks HSTS (incl. <code>includeSubDomains</code>), CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy.</td></tr>
+  <tr><td>&#128269; Authenticity verification</td><td>Cross-field amount reconciliation (e.g. transferred + commission + VAT &asymp; total debited), per-bank reference-number format checks, transaction-status validation, completeness checks.</td></tr>
+  <tr><td>&#128202; Risk scoring</td><td>Every check yields a severity-tagged finding; the report summarizes a 0&ndash;100 score and a PASS / REVIEW / FAIL verdict.</td></tr>
+  <tr><td>&#9889; High performance</td><td>Connection pooling via <code>requests.Session</code>; multithreaded PDF parsing; cached Chrome driver for BOA receipts.</td></tr>
+</table>
+
+<!-- ================= 3. ETHICS ================= -->
+<h1>3. Scope &amp; Ethics</h1>
+<p>This tool is built for <strong>defensive security only</strong>:</p>
+<ul>
+  <li>Verify receipts you are entitled to see (your own transactions, authorized reconciliation).</li>
+  <li>Detect phishing lookalike domains and tampered receipts before they are trusted.</li>
+  <li>Report transport weaknesses (expired/invalid TLS certs, missing security headers, insecure URLs) to the operators who control them.</li>
+</ul>
+<div class="warn">
+<strong>Not</strong> a tool for bypassing access controls, enumerating accounts, or attacking bank
+infrastructure. Unauthorized probing of third-party systems is illegal in most jurisdictions &mdash;
+audit only endpoints you own or are authorized to test.
+</div>
+
+<!-- ================= 4. ARCHITECTURE ================= -->
+<h1>4. Architecture</h1>
+<pre><code>                 +---------------------------+
+                 |   zabagna / zebebgna CLI  |
+                 |   webapp.py (Flask UI)    |
+                 +-------------+-------------+
+                               |
+                               v
+                 +---------------------------+
+                 |   verify_receipt(bank,..) |
+                 |   audit_receipt_url(url)  |
+                 +-------------+-------------+
+                               |
+        +----------------------+----------------------+
+        v                                             v
++------------------+                        +------------------------+
+|   EXTRACTORS     |                        |      VERIFIERS         |
+| cbe, dashen,     |                        | phishing, tls,         |
+| awash, boa,      |                        | headers, integrity     |
+| zemen, tele      |                        +------------------------+
++------------------+                                      |
+        |                                          +-----v-----+
+        v                                          |  Report   |
++------------------+         findings              | score,    |
+|   SecureFetcher  | ----------------------------> | status    |
+| HTTPS-only,      |                                +-----------+
+| TLS-verified     |
++------------------+</code></pre>
+<table>
+  <tr><th style="width:22%">Component</th><th>Responsibility</th></tr>
+  <tr><td><code>zebebgna.fetch</code></td><td><code>SecureFetcher</code> &mdash; HTTPS-only fetching with strict TLS verification, timeouts, bounded redirects, and connection pooling. Refuses non-HTTPS URLs (<code>InsecureURLError</code>).</td></tr>
+  <tr><td><code>zebebgna.extractors</code></td><td>Per-bank parsing: PDF extraction (CBE, Dashen, Zemen) via <code>pdfplumber</code>; HTML tables (Awash, Telebirr) via <code>BeautifulSoup</code>; rendered pages (BOA) via headless Chrome.</td></tr>
+  <tr><td><code>zebebgna.verifiers</code></td><td>Four independent check groups: <code>phishing</code>, <code>tls</code>, <code>headers</code>, <code>integrity</code>.</td></tr>
+  <tr><td><code>zebebgna.report</code></td><td>Data model &mdash; <code>Finding</code> and <code>VerificationReport</code> with scoring and verdict logic.</td></tr>
+  <tr><td><code>webapp.py</code></td><td>Flask application exposing the same pipeline through a browser form for non-technical users.</td></tr>
+</table>
+
+<!-- ================= 5. INSTALLATION ================= -->
+<h1>5. Installation</h1>
+<p>Requires Python 3.8+. From the project directory:</p>
+<pre><code>pip install -e .                 # core (CLI + library)
+pip install -e ".[web]"          # + Flask web UI
+pip install -e ".[dev]"          # + pytest</code></pre>
+<p>For BOA receipts, a <strong>ChromeDriver</strong> matching your installed Chrome is required (the
+extractor drives a headless Chrome browser because BOA receipts render client-side).</p>
+
+<!-- ================= 6. CLI ================= -->
+<h1>6. Command-Line Interface (CLI)</h1>
+<h2>6.1 Verify a receipt</h2>
+<pre><code>zebebgna verify cbe   "https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223"
+zebebgna verify dashen "https://receipt.dashensuperapp.com/receipt/387ETAP2522000WK"
+zebebgna verify tele   CHQ0FJ403O</code></pre>
+<p>Telebirr accepts a bare receipt ID; all other banks require the full receipt URL. If the module
+is not on your PATH, run <code>python -m zebebgna.cli ...</code> instead.</p>
+<h2>6.2 Audit an endpoint</h2>
+<p>Runs only the transport/URL-level checks (phishing, TLS, headers) without extracting receipt data:</p>
+<pre><code>zebebgna audit "https://receipt.dashensuperapp.com/receipt/387ETAP2522000WK"</code></pre>
+<h2>6.3 Sample output</h2>
+<pre><code>{
+  "url": "https://receipt.dashensuperapp.com/receipt/387ETAP2522000WK",
+  "bank": "dashen",
+  "score": 74,
+  "status": "REVIEW",
+  "extracted_data": { "...": "..." },
+  "findings": [
+    {"severity": "info", "category": "tls", "message": "Certificate valid until ..."},
+    {"severity": "warn", "category": "headers", "message": "Missing security header: Content-Security-Policy"},
+    {"severity": "error", "category": "integrity", "message": "Dashen transaction total mismatch: ..."}
+  ]
+}
+SCORE: 74/100   STATUS: REVIEW</code></pre>
+
+<!-- ================= 7. PYTHON API ================= -->
+<h1>7. Python API</h1>
+<h2>7.1 verify_receipt(bank, url_or_id)</h2>
+<p>Full pipeline: extract &rarr; verify. Returns a <code>VerificationReport</code>.</p>
+<pre><code>from zebebgna import verify_receipt
+
+report = verify_receipt("cbe", "https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223")
+print(report.score)    # 0-100
+print(report.status)   # PASS | REVIEW | FAIL
+for f in report.findings:
+    print(f.severity.upper(), "-", f.category, ":", f.message)</code></pre>
+<h2>7.2 audit_receipt_url(url)</h2>
+<p>Transport-only audit (no extraction):</p>
+<pre><code>from zebebgna import audit_receipt_url
+report = audit_receipt_url("https://example-receipt-host/abc123")</code></pre>
+<h2>7.3 VerificationReport &amp; Finding</h2>
+<table>
+  <tr><th style="width:30%">Attribute</th><th>Description</th></tr>
+  <tr><td><code>report.url</code></td><td>The URL that was checked.</td></tr>
+  <tr><td><code>report.bank</code></td><td>Bank key (<code>cbe</code>, <code>dashen</code>, <code>awash</code>, <code>boa</code>, <code>zemen</code>, <code>tele</code>), or <code>None</code> for audits.</td></tr>
+  <tr><td><code>report.data</code></td><td>Extracted receipt fields as a dict.</td></tr>
+  <tr><td><code>report.findings</code></td><td>List of <code>Finding</code> objects.</td></tr>
+  <tr><td><code>report.score</code></td><td>0&ndash;100 security score.</td></tr>
+  <tr><td><code>report.status</code></td><td>PASS, REVIEW, or FAIL.</td></tr>
+  <tr><td><code>report.to_dict()</code></td><td>Full JSON-serializable report.</td></tr>
+</table>
+<p>Each <code>Finding</code> has <code>severity</code> (info / warn / error / critical), <code>category</code>
+(tls / url / phishing / transport / headers / integrity / fetch), and <code>message</code>.</p>
+
+<!-- ================= 8. WEB UI ================= -->
+<h1>8. Web UI for Non-Technical Users</h1>
+<h2>8.1 Running</h2>
+<pre><code>pip install -e ".[web]"
+python webapp.py
+# open http://127.0.0.1:5000</code></pre>
+<p>The user picks the bank, pastes the receipt link (or Telebirr ID), and clicks
+<strong>Verify receipt</strong>. The result page shows:</p>
+<ul>
+  <li>A color-coded verdict: <span class="badge green">Good</span>
+      <span class="badge amber">Needs review</span> <span class="badge red">Problem found</span>,
+      plus the 0&ndash;100 score.</li>
+  <li>All performed checks with severity badges and plain-language messages.</li>
+  <li>The extracted receipt details in a readable table.</li>
+</ul>
+<h2>8.2 Hardening for shared use</h2>
+<p>The web app is a server that fetches URLs on behalf of its users, so it must be locked down
+before exposing it beyond your own machine:</p>
+<ul>
+  <li><strong>HTTPS-only:</strong> plain-HTTP URLs are refused by the secure fetcher.</li>
+  <li><strong>Host allowlist (SSRF guard):</strong> restrict which hosts the server may fetch:</li>
+</ul>
+<pre><code>RECEIPTGUARD_ALLOWED_HOSTS="apps.cbe.com.et,transactioninfo.ethiotelecom.et" python webapp.py</code></pre>
+<ul>
+  <li><strong>Authentication:</strong> put the app behind a reverse proxy with a login (e.g. basic auth or SSO).</li>
+  <li><strong>Binding:</strong> the default binds to <code>127.0.0.1</code> only &mdash; keep it that way unless you truly need remote access.</li>
+</ul>
+
+<!-- ================= 9. SECURITY CHECKS ================= -->
+<h1>9. Security Checks Reference</h1>
+<h2>9.1 URL / phishing checks (<code>phishing.py</code>)</h2>
+<table>
+  <tr><th style="width:34%">Check</th><th style="width:14%">Severity</th><th>Condition</th></tr>
+  <tr><td>Insecure scheme</td><td>critical</td><td>URL is not <code>https</code>.</td></tr>
+  <tr><td>Raw IP host</td><td>critical</td><td>Host is a literal IP address (e.g. <code>192.168.1.10</code>).</td></tr>
+  <tr><td>Lookalike domain</td><td>warn</td><td>Registered domain &ge; 72% similar to a known bank domain (typosquatting).</td></tr>
+  <tr><td>Punycode host</td><td>warn</td><td>Host uses IDN encoding (<code>xn--</code>).</td></tr>
+  <tr><td>URL shortener</td><td>warn</td><td>Host is a known shortener (bit.ly, t.co, tinyurl.com, &hellip;).</td></tr>
+  <tr><td>Non-standard port</td><td>warn</td><td>HTTPS on a port other than 443.</td></tr>
+</table>
+<h2>9.2 TLS checks (<code>tls.py</code>)</h2>
+<table>
+  <tr><th style="width:34%">Check</th><th style="width:14%">Severity</th><th>Condition</th></tr>
+  <tr><td>Chain verification</td><td>critical</td><td>Certificate cannot be validated against trusted roots.</td></tr>
+  <tr><td>Hostname coverage</td><td>critical</td><td>Certificate SAN does not cover the hostname.</td></tr>
+  <tr><td>Expired certificate</td><td>critical</td><td>Current date is past <code>notAfter</code>.</td></tr>
+  <tr><td>Near expiry</td><td>warn</td><td>Certificate expires within 30 days.</td></tr>
+  <tr><td>Connection failure</td><td>error</td><td>No TLS session could be established.</td></tr>
+  <tr><td>Issuer / protocol</td><td>info</td><td>Informational: issuer and TLS version.</td></tr>
+</table>
+<h2>9.3 Security headers (<code>headers.py</code>)</h2>
+<table>
+  <tr><th style="width:34%">Header</th><th style="width:14%">Severity if missing</th><th>Purpose</th></tr>
+  <tr><td>Strict-Transport-Security</td><td>warn</td><td>Forces HTTPS in browsers; blocks SSL-stripping.</td></tr>
+  <tr><td>Content-Security-Policy</td><td>warn</td><td>Limits what the page can load; contains XSS damage.</td></tr>
+  <tr><td>X-Frame-Options</td><td>warn</td><td>Prevents clickjacking via iframe embedding.</td></tr>
+  <tr><td>X-Content-Type-Options</td><td>warn</td><td>Disables MIME sniffing.</td></tr>
+  <tr><td>Referrer-Policy</td><td>info</td><td>Controls referrer leakage.</td></tr>
+  <tr><td>Permissions-Policy</td><td>info</td><td>Restricts browser feature access.</td></tr>
+</table>
+<div class="note"><strong>Important:</strong> missing headers are hardening gaps, not proven
+exploits. A receipt site without these headers can still be completely legitimate &mdash; the
+verdict wording accounts for this via scoring.</div>
+<h2>9.4 Integrity checks (<code>integrity.py</code>)</h2>
+<table>
+  <tr><th style="width:34%">Check</th><th style="width:14%">Severity</th><th>Description</th></tr>
+  <tr><td>Transaction status</td><td>critical</td><td>Status other than SUCCESS / COMPLETED / PAID / DONE.</td></tr>
+  <tr><td>Amount reconciliation</td><td>error</td><td>Components (transferred + commission + VAT) do not sum to the stated total (&plusmn;1 ETB). Per-bank for CBE, Dashen, Zemen.</td></tr>
+  <tr><td>Reference format</td><td>error</td><td>Reference number does not match the bank&rsquo;s expected format (e.g. CBE references must start with <code>FT</code>).</td></tr>
+  <tr><td>Missing fields</td><td>warn</td><td>Required receipt fields (amount, date, reference, &hellip;) are absent.</td></tr>
+  <tr><td>Non-positive amount</td><td>error</td><td>Telebirr total paid is zero or negative.</td></tr>
+</table>
+
+<!-- ================= 10. SCORING ================= -->
+<h1>10. Risk Scoring &amp; Verdicts</h1>
+<p>Each finding carries a severity penalty subtracted from 100:</p>
+<table>
+  <tr><th>Severity</th><th>Penalty</th><th>Example</th></tr>
+  <tr><td>info</td><td>2</td><td>Certificate issuer, missing optional headers</td></tr>
+  <tr><td>warn</td><td>10</td><td>Missing HSTS/CSP, near-expiry cert, lookalike domain</td></tr>
+  <tr><td>error</td><td>20</td><td>Amount mismatch, bad reference, no connection</td></tr>
+  <tr><td>critical</td><td>40</td><td>Expired/invalid cert, phishing IP host, failed status</td></tr>
+</table>
+<table>
+  <tr><th>Score</th><th>Status</th><th>Meaning</th></tr>
+  <tr><td>&ge; 85</td><td><span class="badge green">PASS</span></td><td>No material findings; receipt can be trusted.</td></tr>
+  <tr><td>55 &ndash; 84</td><td><span class="badge amber">REVIEW</span></td><td>Weaknesses present; review notes before relying on the receipt.</td></tr>
+  <tr><td>&lt; 55</td><td><span class="badge red">FAIL</span></td><td>Significant problems; do not trust without resolution.</td></tr>
+</table>
+<p>Any <strong>critical</strong> finding forces FAIL regardless of score.</p>
+
+<!-- ================= 11. BANKS ================= -->
+<h1>11. Supported Banks &amp; Reference Formats</h1>
+<table>
+  <tr><th>Bank</th><th>Type</th><th>Reference pattern</th><th>Extraction method</th></tr>
+  <tr><td>CBE</td><td>Bank</td><td><code>FT</code> + 6&ndash;20 alphanumerics</td><td>PDF (pdfplumber, threaded)</td></tr>
+  <tr><td>Dashen</td><td>Bank</td><td>8&ndash;24 alphanumerics</td><td>PDF (pdfplumber, threaded)</td></tr>
+  <tr><td>Awash</td><td>Bank</td><td>6&ndash;30 alphanumerics/dashes</td><td>HTML table</td></tr>
+  <tr><td>BOA</td><td>Bank</td><td>6&ndash;40 alphanumerics/dashes</td><td>Headless Chrome</td></tr>
+  <tr><td>Zemen</td><td>Bank</td><td>6&ndash;30 alphanumerics</td><td>PDF (pdfplumber, threaded)</td></tr>
+  <tr><td>Telebirr</td><td>Mobile money</td><td>8&ndash;12 uppercase alphanumerics</td><td>HTML page</td></tr>
+</table>
+<p>CBE additionally supports the helper <code>extract_cbe_receipt_info_from_ft(ft_number, account)</code>,
+which builds the receipt URL from an FT number plus the last 8 digits of the account.</p>
+
+<!-- ================= 12. TESTING ================= -->
+<h1>12. Testing</h1>
+<pre><code>pip install -e ".[dev]"
+pytest tests/</code></pre>
+<p>The suite (25 tests) covers URL/phishing heuristics, integrity math, report scoring, secure-fetch
+refusals, the TLS failure path, the full verification pipeline (network mocked), and the web UI
+form/report/allowlist behavior. Live-network extraction tests are deliberately not part of the
+default suite.</p>
+
+<!-- ================= 13. STRUCTURE ================= -->
+<h1>13. Project Structure</h1>
+<pre><code>zebebgna/
++-- pyproject.toml            # package metadata, deps, CLI entry point
++-- README.md                 # project documentation
++-- webapp.py                 # Flask web UI for non-technical users
++-- zebebgna/
+|   +-- __init__.py           # public API: verify_receipt, audit_receipt_url
+|   +-- cli.py                # zebebgna verify / audit commands
+|   +-- fetch.py              # SecureFetcher (HTTPS-only, TLS-verified)
+|   +-- report.py             # Finding, VerificationReport, scoring
+|   +-- templates/            # web UI pages (index, report)
+|   +-- extractors/           # per-bank parsing
+|   |   +-- cbe.py  dashen.py  awash.py  boa.py  zemen.py  tele.py
+|   +-- verifiers/            # security check groups
+|       +-- phishing.py  tls.py  headers.py  integrity.py
++-- tests/                    # 25 tests (verifiers + web UI)
++-- docs/                     # this documentation</code></pre>
+
+<!-- ================= 14. LIMITATIONS ================= -->
+<h1>14. Limitations &amp; Deployment Notes</h1>
+<ul>
+  <li><strong>Regional restrictions:</strong> Telebirr often blocks or times out requests from foreign IPs
+  (403 / ERR_FAILED / DNS failures). It works best from servers inside Ethiopia; VPS providers abroad
+  (AWS, Hetzner, &hellip;) are typically affected.</li>
+  <li><strong>BOA requires ChromeDriver:</strong> the BOA extractor needs a headless Chrome browser and
+  caches the driver session for performance.</li>
+  <li><strong>Regex-based parsing:</strong> extraction relies on each bank&rsquo;s receipt layout. If a bank
+  changes its format, patterns in the relevant extractor must be updated.</li>
+  <li><strong>Passive verification only:</strong> Zebebgna checks what a receipt and its endpoint
+  <em>say</em>; it cannot prove the bank&rsquo;s ledger state. It detects tampering, phishing, and weak
+  transport &mdash; it is not a replacement for bank statements.</li>
+</ul>
+
+<!-- ================= 15. LICENSE ================= -->
+<h1>15. License</h1>
+<p>MIT License &mdash; see <a href="https://opensource.org/licenses/MIT">https://opensource.org/licenses/MIT</a>.</p>
+
+</body>
+</html>

@@ -2,7 +2,10 @@
 
 SEVERITIES = ("info", "warn", "error", "critical")
 
-PENALTIES = {"info": 2, "warn": 10, "error": 20, "critical": 40}
+# Informational notes ("info") carry no penalty: they describe the serving
+# site's hardening posture, not the receipt's authenticity, so genuine
+# receipts are never failed for them.
+PENALTIES = {"info": 0, "warn": 10, "error": 20, "critical": 40}
 
 
 class Finding:
@@ -34,15 +37,35 @@ class VerificationReport:
         self.bank = bank
         self.data = data or {}
         self.findings = []
+        self.threat = None
+        self.check_id = None
 
     def add_finding(self, severity, category, message):
         self.findings.append(Finding(severity, category, message))
 
     @property
     def score(self):
-        """0-100 security score; each finding carries a severity penalty."""
+        """0-100 security score; each finding carries a severity penalty.
+
+        A receipt whose data is missing or fails integrity checks (amount
+        mismatch, bad reference, non-success status) cannot be trusted at
+        all, so the score collapses to 0 regardless of how clean the
+        endpoint itself looks.
+        """
+        if self._receipt_data_failed():
+            return 0
         total = sum(PENALTIES[f.severity] for f in self.findings)
         return max(0, min(100 - total, 100))
+
+    def _receipt_data_failed(self):
+        if self.bank is None:
+            return False
+        if not self.data:
+            return True
+        return any(
+            f.category == "integrity" and f.severity in ("error", "critical")
+            for f in self.findings
+        )
 
     @property
     def status(self):
@@ -62,4 +85,5 @@ class VerificationReport:
             "status": self.status,
             "extracted_data": self.data,
             "findings": [f.to_dict() for f in self.findings],
+            "threat": self.threat.to_dict() if self.threat else None,
         }

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>History - Zebebgna</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234f46e5'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Segoe UI Emoji'%3E%F0%9F%9B%A1%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --indigo: #4f46e5; --violet: #7c3aed;
+      --ink: #0f172a; --muted: #64748b; --faint: #94a3b8;
+      --bg: #f6f7fb; --card: #ffffff; --line: #e7e9f2;
+      --green: #059669; --red: #dc2626;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Segoe UI Variable", "Segoe UI", -apple-system,
+        BlinkMacSystemFont, Roboto, Inter, Arial, sans-serif;
+      background: var(--bg); color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    .topbar {
+      background: rgba(255, 255, 255, .82); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-inner {
+      max-width: 940px; margin: 0 auto; padding: 12px 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .logo {
+      width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      display: flex; align-items: center; justify-content: center; font-size: 19px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, .35);
+    }
+    .brand-name { font-weight: 800; font-size: 16px; letter-spacing: -.2px; }
+    .brand-tag { font-size: 11.5px; color: var(--muted); margin-top: -2px; }
+    .navlink { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--indigo); text-decoration: none; }
+    .navlink:hover { text-decoration: underline; }
+    main { max-width: 940px; margin: 0 auto; padding: 30px 24px 10px; }
+    h1 { font-size: 24px; letter-spacing: -.4px; margin: 0 0 4px; }
+    .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 22px; }
+    .card {
+      background: var(--card); border-radius: 16px; padding: 20px 24px;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--line); margin-bottom: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th { text-align: left; color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .7px; padding: 8px 10px; border-bottom: 2px solid var(--line); }
+    td { padding: 11px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    tr:hover td { background: #f8f9fc; }
+    .pill {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 800; letter-spacing: .5px; color: #fff;
+    }
+    .pill.PASS, .pill.LOW { background: var(--green); }
+    .pill.REVIEW, .pill.MEDIUM { background: #d97706; }
+    .pill.FAIL, .pill.HIGH, .pill.CRITICAL { background: var(--red); }
+    .url { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
+    .actions { display: flex; gap: 6px; align-items: center; }
+    .actions form { margin: 0; }
+    .thumb {
+      border: 1px solid var(--line); background: #fff; border-radius: 8px;
+      width: 30px; height: 30px; cursor: pointer; font-size: 13px; line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .thumb:hover { border-color: var(--indigo); }
+    .thumb.on-good { background: #dcfce7; border-color: var(--green); }
+    .thumb.on-bad { background: #fee2e2; border-color: var(--red); }
+    .view { font-weight: 700; color: var(--indigo); text-decoration: none; font-size: 13px; }
+    .view:hover { text-decoration: underline; }
+    .empty { color: var(--faint); font-style: italic; padding: 20px 0; text-align: center; }
+    .error {
+      background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;
+      padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13.5px;
+    }
+    .clear { float: right; font-size: 12px; color: var(--muted); }
+    footer { text-align: center; font-size: 12px; color: var(--faint); padding: 30px 24px 44px; }
+    @media (max-width: 700px) {
+      .url { max-width: 140px; }
+      td:nth-child(3), th:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">&#128737;</div>
+      <div>
+        <div class="brand-name">Zebebgna</div>
+        <div class="brand-tag">verification history</div>
+      </div>
+      <a class="navlink" href="/">&#8592; New check</a>
+    </div>
+  </div>
+
+  <main>
+    <h1>History</h1>
+    <p class="sub">Past checks are stored locally. Mark a verdict as correct / incorrect
+      to teach the threat engine about a domain.</p>
+
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+    <div class="card">
+      {% if checks %}
+      <table>
+        <tr>
+          <th>Date</th><th>Bank</th><th>Score</th><th>Status</th><th>Risk</th>
+          <th>URL</th><th>Feedback</th><th></th>
+        </tr>
+        {% for c in checks %}
+        <tr>
+          <td>{{ c.ts }}</td>
+          <td>{{ (c.bank or "-") | upper }}</td>
+          <td>{{ c.score }}</td>
+          <td><span class="pill {{ c.status }}">{{ c.status }}</span></td>
+          <td><span class="pill {{ c.risk_level or "LOW" }}">{{ c.risk_level or "-" }}</span></td>
+          <td><span class="url" title="{{ c.url }}">{{ c.url }}</span></td>
+          <td>
+            <div class="actions">
+              <form method="post" action="{{ url_for("history_feedback", check_id=c.id) }}">
+                <input type="hidden" name="ok" value="1">
+                <button type="submit" class="thumb {% if c.feedback == 1 %}on-good{% endif %}"
+                        title="Verdict was correct">&#128077;</button>
+              </form>
+              <form method="post" action="{{ url_for("history_feedback", check_id=c.id) }}">
+                <input type="hidden" name="ok" value="0">
+                <button type="submit" class="thumb {% if c.feedback == 0 %}on-bad{% endif %}"
+                        title="Verdict was incorrect">&#128078;</button>
+              </form>
+            </div>
+          </td>
+          <td><a class="view" href="{{ url_for("history_view", check_id=c.id) }}">View &rarr;</a></td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+      <p class="empty">No checks stored yet. Run a verification first and it will appear here.</p>
+      {% endif %}
+    </div>
+  </main>
+
+  <footer>Zebebgna &middot; history is stored locally on this machine only.</footer>
+</body>
+</html>

@@ -1,10 +1,15 @@
-"""HTTP security headers audit."""
+"""HTTP security headers audit.
+
+Missing hardening headers are reported as informational notes: they describe
+the serving site's security posture, not the receipt's authenticity, so they
+never drag a genuine receipt's verdict down.
+"""
 
 SECURITY_HEADERS = {
-    "Strict-Transport-Security": "warn",
-    "Content-Security-Policy": "warn",
-    "X-Frame-Options": "warn",
-    "X-Content-Type-Options": "warn",
+    "Strict-Transport-Security": "info",
+    "Content-Security-Policy": "info",
+    "X-Frame-Options": "info",
+    "X-Content-Type-Options": "info",
     "Referrer-Policy": "info",
     "Permissions-Policy": "info",
 }
@@ -30,6 +35,6 @@ def audit_headers(headers, report):
     hsts = headers.get("Strict-Transport-Security")
     if hsts and "includeSubDomains" not in hsts:
         report.add_finding(
-            "warn", "headers",
+            "info", "headers",
             "Strict-Transport-Security does not include includeSubDomains",
         )

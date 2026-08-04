@@ -30,8 +30,13 @@ PUNYCODE_RE = re.compile(r"^xn--")
 LOOKALIKE_THRESHOLD = 0.72
 
 
+_MULTI_TLDS = {"com.et", "co.et", "org.et", "net.et", "gov.et", "edu.et"}
+
+
 def _registered_domain(host):
     parts = host.split(".")
+    if len(parts) >= 3 and ".".join(parts[-2:]) in _MULTI_TLDS:
+        return ".".join(parts[-3:])
     return ".".join(parts[-2:]) if len(parts) >= 2 else host
 
 

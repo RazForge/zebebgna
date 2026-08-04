@@ -5,8 +5,15 @@ from zebebgna.fetch import fetcher
 from . import headers, integrity, phishing, tls
 
 
-def run_verifiers(report):
-    """Run the full verification pipeline over a :class:`VerificationReport`."""
+def run_verifiers(report, feedback=None):
+    """Run the full verification pipeline over a :class:`VerificationReport`.
+
+    Single-signal checks run first (phishing, tls, headers, integrity);
+    the threat-fusion engine then correlates those signals into an attack
+    scenario and attaches a :class:`~zebebgna.fusion.ThreatAssessment`.
+    ``feedback`` is an optional ``(confirmed, rejected)`` pair of prior
+    user verdicts for the same domain, used to nudge the fused risk.
+    """
     phishing.audit_url(report.url, report)
     tls.audit_tls(report.url, report)
     try:
@@ -18,6 +25,10 @@ def run_verifiers(report):
         fetched_headers = None
     headers.audit_headers(fetched_headers, report)
     integrity.verify_integrity(report.bank, report.data, report)
+
+    from zebebgna.fusion import assess
+
+    report.threat = assess(report, feedback=feedback)
 
 
 __all__ = ["run_verifiers", "phishing", "tls", "headers", "integrity"]
