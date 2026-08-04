@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="logo.png" alt="Zebebgna Logo" width="200"/>
+</div>
+
 # 🛡️ Zebebgna
 
 **"guard"** · Defensive verification of Ethiopian bank receipts.

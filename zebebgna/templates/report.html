@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Result - Receipt Verification</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234f46e5'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Segoe UI Emoji'%3E%F0%9F%9B%A1%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
   <style>
     :root {
       --indigo: #4f46e5; --violet: #7c3aed;
@@ -31,9 +31,12 @@
     }
     .logo {
       width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
-      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      background: #fff;
       display: flex; align-items: center; justify-content: center; font-size: 19px;
       box-shadow: 0 4px 12px rgba(79, 70, 229, .35);
+    }
+    .logo img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 11px;
     }
     .brand-name { font-weight: 800; font-size: 16px; letter-spacing: -.2px; }
     .brand-tag { font-size: 11.5px; color: var(--muted); margin-top: -2px; }
@@ -171,7 +174,7 @@
 <body>
   <div class="topbar">
     <div class="topbar-inner">
-      <div class="logo">&#128737;</div>
+      <div class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="Zebebgna Logo"></div>
       <div>
         <div class="brand-name">Zebebgna</div>
         <div class="brand-tag">Verification Result &middot; {{ bank_name }}</div>
