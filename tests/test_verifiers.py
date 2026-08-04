@@ -222,3 +222,125 @@ def test_verify_receipt_pipeline_end_to_end():
 def test_audit_receipt_url_rejects_http_in_fetch():
     with pytest.raises(InsecureURLError):
         audit_receipt_url("http://receipt.example.com/r")
+
+
+def test_phishing_flags_valid_ip_literal():
+    report = VerificationReport(url="https://8.8.8.8/receipt/123")
+    phishing.audit_url(report.url, report)
+    assert ("critical", "url") in finding_categories(report)
+
+
+def test_phishing_ignores_invalid_ip_literal():
+    report = VerificationReport(url="https://999.999.999.999/receipt/123")
+    phishing.audit_url(report.url, report)
+    assert ("critical", "url") not in finding_categories(report)
+
+
+# ---------------------------------------------------- false-PASS regression
+
+def test_all_none_extraction_collapses_score():
+    report = VerificationReport(
+        url="https://apps.cbe.com.et:100/?id=FT123", bank="cbe",
+        data={"customer_name": None, "amount": None, "status": None},
+    )
+    report.add_finding("info", "tls", "Certificate valid until 2030")
+    assert report.score == 0
+    assert report.status == "FAIL"
+
+
+def test_partial_extraction_stays_readable():
+    report = VerificationReport(
+        url="https://apps.cbe.com.et:100/?id=FT123", bank="cbe",
+        data={"customer_name": None, "status": "SUCCESS"},
+    )
+    assert report.score == 100
+    assert report.status == "PASS"
+
+
+# --------------------------------------------- extended amount reconciliation
+
+def test_integrity_boa_amounts_consistent():
+    report = VerificationReport(bank="boa", url="https://example.com")
+    data = {
+        "Transferred Amount": "1000.00",
+        "Service Charge": "20.00",
+        "VAT": "3.00",
+        "Total Amount": "1023.00",
+        "status": "SUCCESS",
+    }
+    integrity.verify_integrity("boa", data, report)
+    assert not any(f.severity == "error" and f.category == "integrity"
+                   for f in report.findings)
+
+
+def test_integrity_boa_amount_mismatch():
+    report = VerificationReport(bank="boa", url="https://example.com")
+    data = {
+        "Transferred Amount": "1000.00",
+        "Service Charge": "20.00",
+        "VAT": "3.00",
+        "Total Amount": "1000.00",
+    }
+    integrity.verify_integrity("boa", data, report)
+    assert any(f.severity == "error" and f.category == "integrity"
+               for f in report.findings)
+
+
+def test_integrity_awash_amount_mismatch():
+    report = VerificationReport(bank="awash", url="https://example.com")
+    data = {
+        "Amount": "1000.00",
+        "Charge": "10.00",
+        "VAT": "1.50",
+        "Total": "900.00",
+    }
+    integrity.verify_integrity("awash", data, report)
+    assert any(f.severity == "error" and f.category == "integrity"
+               for f in report.findings)
+
+
+def test_integrity_tele_total_mismatch():
+    report = VerificationReport(bank="tele", url="https://example.com")
+    data = {
+        "amount": "100.00",
+        "service_charge": "5.00",
+        "total_paid": "90.00",
+    }
+    integrity.verify_integrity("tele", data, report)
+    assert any(f.severity == "error" and f.category == "integrity"
+               for f in report.findings)
+
+
+def test_integrity_tele_missing_breakdown_is_skipped():
+    report = VerificationReport(bank="tele", url="https://example.com")
+    integrity.verify_integrity(
+        "tele", {"total_paid": "100.00 Birr"}, report
+    )
+    assert not any(f.severity == "error" and f.category == "integrity"
+                   for f in report.findings)
+
+
+# ---------------------------------------------------------------- tele extractor
+
+def test_tele_extractor_reads_real_structure():
+    from bs4 import BeautifulSoup
+
+    from zebebgna.extractors import tele
+
+    html = (
+        "<table>"
+        "<tr><td>Receipt No</td><td>CHQ0FJ403O</td></tr>"
+        "<tr><td>Payer Name</td><td>ALEMU NEBEBE MEKONEN</td></tr>"
+        "<tr><td>Payer Telebirr Number</td><td>2519****9144</td></tr>"
+        "<tr><td>Credited Party Name</td><td>Yabsera Solomon Demelew</td></tr>"
+        "<tr><td>Credited Party Account No</td><td>2519****1294</td></tr>"
+        "<tr><td>Transaction Status</td><td>Completed</td></tr>"
+        "<tr><td>Total Paid Amount</td><td>312 Birr</td></tr>"
+        "</table>"
+    )
+    data = tele._extract_from_soup(BeautifulSoup(html, "html.parser"))
+    assert data["payer_name"] == "ALEMU NEBEBE MEKONEN"
+    assert data["status"] == "Completed"
+    assert data["total_paid"] == "312 Birr"
+    assert data["reference_no"] == "CHQ0FJ403O"
+    assert "amount" not in data

@@ -15,10 +15,11 @@ import os
 import re
 from urllib.parse import urlparse
 
+import requests
 from flask import Flask, redirect, render_template, request, url_for
 
 from zebebgna import verify_receipt
-from zebebgna.fetch import InsecureURLError
+from zebebgna.fetch import InsecureURLError, fetcher, host_is_private_literal
 from zebebgna.verifiers import phishing
 
 PKG_DIR = os.path.dirname(os.path.abspath(__import__("zebebgna").__file__))
@@ -56,12 +57,23 @@ ALLOWED_HOSTS = {
     if h.strip()
 }
 
+# Keep the secure fetcher in sync so every redirect hop is re-validated
+# against the same allowlist (the check here is only the first line of
+# defense; the fetcher enforces the policy on every hop).
+fetcher.allowed_hosts = ALLOWED_HOSTS
+
 
 def _host_allowed(url):
-    if not ALLOWED_HOSTS:
-        return True
     host = (urlparse(url).hostname or "").lower()
-    return host in ALLOWED_HOSTS or any(host.endswith("." + h) for h in ALLOWED_HOSTS)
+    if not host:
+        return False
+    if host_is_private_literal(host):
+        return False
+    if ALLOWED_HOSTS and not (
+        host in ALLOWED_HOSTS or any(host.endswith("." + h) for h in ALLOWED_HOSTS)
+    ):
+        return False
+    return True
 
 
 def _normalize_url(bank, url_or_id):
@@ -199,7 +211,24 @@ def verify():
         return render_template(
             "index.html", banks=BANK_NAMES, error=f"Could not verify: {exc}"
         )
+    except (requests.ConnectionError, requests.Timeout) as exc:
+        app.logger.error(
+            "Network error verifying receipt bank=%r url=%r: %s",
+            bank, url, exc, exc_info=True,
+        )
+        return render_template(
+            "index.html", banks=BANK_NAMES,
+            error=(
+                "Could not reach the receipt website. It may be temporarily "
+                "down, or your network/internet may be blocking it. "
+                "Please try again in a moment."
+            ),
+        )
     except Exception as exc:
+        app.logger.error(
+            "Receipt verification failed for bank=%r url=%r: %s",
+            bank, url, exc, exc_info=True,
+        )
         return render_template(
             "index.html", banks=BANK_NAMES,
             error=(
@@ -210,7 +239,12 @@ def verify():
 
     from zebebgna import history
 
-    report.check_id = history.record(report)
+    try:
+        report.check_id = history.record(report)
+    except Exception as exc:
+        # A DB failure must not turn a successful verification into a 500;
+        # the report is still shown, just without a stored history entry.
+        app.logger.warning("Could not store check in history: %s", exc)
     context = _report_context(report)
     context.update(
         report=report,
@@ -256,6 +290,14 @@ def history_feedback(check_id):
     ok = request.form.get("ok")
     if ok in ("1", "0"):
         history.record_feedback(check_id, ok == "1")
+    return redirect(url_for("history_page"))
+
+
+@app.route("/history/clear", methods=["POST"])
+def history_clear():
+    from zebebgna import history
+
+    history.clear()
     return redirect(url_for("history_page"))
 
 

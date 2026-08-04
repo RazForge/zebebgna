@@ -20,7 +20,7 @@ def extract_awash_receipt_data(url):
 
     keys_of_interest = [
         "Transaction Time", "Transaction Type", "Amount", "Charge", "VAT",
-        "Sender Name", "Sender Account", "Beneficiary name",
+        "Total", "Sender Name", "Sender Account", "Beneficiary name",
         "Beneficiary Account", "Beneficiary Bank", "Reason", "Transaction ID",
     ]
 

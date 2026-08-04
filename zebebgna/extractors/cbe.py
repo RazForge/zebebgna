@@ -1,7 +1,7 @@
 """CBE receipt extraction (PDF) with secure fetching."""
 
+import io
 import re
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import pdfplumber
@@ -10,14 +10,11 @@ from zebebgna.fetch import fetcher
 
 
 def extract_cbe_receipt_info(url):
-    pdf_path = fetcher.fetch_pdf(url)
-
     def extract_page_text(page):
         return page.extract_text()
 
-    with pdfplumber.open(pdf_path) as pdf:
-        with ThreadPoolExecutor() as executor:
-            texts = list(executor.map(extract_page_text, pdf.pages))
+    with pdfplumber.open(io.BytesIO(fetcher.fetch_pdf_bytes(url))) as pdf:
+        texts = [extract_page_text(page) for page in pdf.pages]
         full_text = "\n".join(text for text in texts if text)
 
     patterns = {
@@ -40,11 +37,10 @@ def extract_cbe_receipt_info(url):
         "amount_in_words": re.compile(r"Amount in Word ETB\s+(.+)"),
     }
 
-    data = {
-        key: (pattern.search(full_text).group(1).strip()
-              if pattern.search(full_text) else None)
-        for key, pattern in patterns.items()
-    }
+    data = {}
+    for key, pattern in patterns.items():
+        match = pattern.search(full_text)
+        data[key] = match.group(1).strip() if match else None
 
     payment_date_str = data.get("payment_date")
     if payment_date_str:

@@ -5,7 +5,30 @@ SEVERITIES = ("info", "warn", "error", "critical")
 # Informational notes ("info") carry no penalty: they describe the serving
 # site's hardening posture, not the receipt's authenticity, so genuine
 # receipts are never failed for them.
-PENALTIES = {"info": 0, "warn": 10, "error": 20, "critical": 40}
+# Single source of truth for severity weights. Finding severities (info,
+# warn, error, critical) are subtractive penalties on a 100-point score;
+# "high" exists only for fused threat correlations and is additive.
+SEVERITY_WEIGHTS = {
+    "info": 0,
+    "warn": 10,
+    "error": 20,
+    "high": 35,
+    "critical": 40,
+}
+PENALTIES = {sev: w for sev, w in SEVERITY_WEIGHTS.items() if sev != "high"}
+
+
+def has_receipt_data(data):
+    """True if any extracted field carries a non-empty value.
+
+    Extractors return a dict keyed by the expected fields; on a failed parse
+    every value is ``None``/empty, which is indistinguishable from ``{}``.
+    A receipt is only "readable" when at least one field has real content.
+    """
+    return any(
+        value is not None and str(value).strip() != ""
+        for value in (data or {}).values()
+    )
 
 
 class Finding:
@@ -60,7 +83,7 @@ class VerificationReport:
     def _receipt_data_failed(self):
         if self.bank is None:
             return False
-        if not self.data:
+        if not has_receipt_data(self.data):
             return True
         return any(
             f.category == "integrity" and f.severity in ("error", "critical")

@@ -45,7 +45,7 @@ file first to recall the full context before doing any work on it.
 - **Python API:** `verify_receipt(bank, url_or_id)`, `audit_receipt_url(url)`
 - **Web UI (for non-technical users):** `python webapp.py` → http://127.0.0.1:5000
   (Flask; form + color-coded verdict page; optional SSRF allowlist via
-  `RECEIPTGUARD_ALLOWED_HOSTS` env var — note: env var name kept as RECEIPTGUARD_*)
+  `zebebgna_ALLOWED_HOSTS` env var)
 - **Docs:** `docs/Zebebgna-Documentation.html` + `.pdf` (13 pages, generated via
   Edge headless `--print-to-pdf`)
 
@@ -53,7 +53,7 @@ file first to recall the full context before doing any work on it.
 ```
 cd F:\My Project\zebebgna
 py -m pip install -e ".[web]"     # core + Flask web UI
-py -m pytest tests/ -q            # 25 tests, all pass
+py -m pytest tests/ -q            # 96 tests, all pass
 py webapp.py                      # start web UI
 ```
 Note: on this machine `python` is not on PATH — use `py` (Python 3.14.4).

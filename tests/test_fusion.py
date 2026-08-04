@@ -233,6 +233,18 @@ def test_audit_without_receipt_is_not_unreadable():
     assert assessment.unreadable is False
     assert assessment.indicators["receipt_readable"] is False
 
+
+def test_all_none_extraction_is_unreadable():
+    report = VerificationReport(
+        url="https://apps.cbe.com.et:100/?id=FT123", bank="cbe",
+        data={"customer_name": None, "amount": None},
+    )
+    assessment = assess(report)
+    assert assessment.unreadable is True
+    assert assessment.risk_level == "HIGH"
+    assert "receipt_unreadable" in rule_ids(assessment)
+    assert assessment.indicators["receipt_readable"] is False
+
 def test_run_verifiers_attaches_threat_assessment():
     report = VerificationReport(
         url="https://receipt.example.com/r", bank="cbe",

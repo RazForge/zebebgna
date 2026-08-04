@@ -64,3 +64,10 @@ def test_clear(db):
 def test_db_path_env(tmp_path, monkeypatch):
     monkeypatch.setenv("ZEBEBGNA_DB", str(tmp_path / "custom.db"))
     assert history._db_path().endswith("custom.db")
+
+
+def test_db_path_bare_filename(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("ZEBEBGNA_DB", "checks.db")
+    check_id = history.record(_report())
+    assert history.get_check(check_id)["id"] == check_id

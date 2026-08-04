@@ -32,7 +32,9 @@ _AMOUNT_TOLERANCE = Decimal("1.00")
 def _to_decimal(value):
     if value is None:
         return None
-    cleaned = str(value).replace(",", "").replace("ETB", "").strip()
+    cleaned = (
+        str(value).replace(",", "").replace("ETB", "").replace("Birr", "").strip()
+    )
     try:
         return Decimal(cleaned)
     except InvalidOperation:
@@ -122,6 +124,35 @@ def verify_integrity(bank, data, report):
                 data.get("VAT"),
             ],
             data.get("Total Amount Paid"),
+        )
+    elif bank == "awash":
+        _check_amount_math(
+            report, "Awash total amount",
+            [
+                data.get("Amount"),
+                data.get("Charge"),
+                data.get("VAT"),
+            ],
+            data.get("Total"),
+        )
+    elif bank == "boa":
+        _check_amount_math(
+            report, "BOA total amount",
+            [
+                data.get("Transferred Amount"),
+                data.get("Service Charge"),
+                data.get("VAT"),
+            ],
+            data.get("Total Amount"),
+        )
+    elif bank == "tele":
+        _check_amount_math(
+            report, "Telebirr total paid",
+            [
+                data.get("amount"),
+                data.get("service_charge"),
+            ],
+            data.get("total_paid"),
         )
 
     _check_reference(bank, data, report)

@@ -75,6 +75,12 @@
       padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13.5px;
     }
     .clear { float: right; font-size: 12px; color: var(--muted); }
+    .clearbtn {
+      border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c;
+      border-radius: 8px; padding: 7px 14px; font-size: 12.5px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    .clearbtn:hover { background: #fee2e2; }
     footer { text-align: center; font-size: 12px; color: var(--faint); padding: 30px 24px 44px; }
     @media (max-width: 700px) {
       .url { max-width: 140px; }
@@ -95,7 +101,15 @@
   </div>
 
   <main>
-    <h1>History</h1>
+    <h1>History
+      {% if checks %}
+      <form method="post" action="{{ url_for("history_clear") }}"
+            style="display:inline; float:right;"
+            onsubmit="return confirm('Delete ALL stored checks? This cannot be undone.');">
+        <button type="submit" class="clearbtn">Clear all</button>
+      </form>
+      {% endif %}
+    </h1>
     <p class="sub">Past checks are stored locally. Mark a verdict as correct / incorrect
       to teach the threat engine about a domain.</p>
 

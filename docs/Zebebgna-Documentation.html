@@ -271,7 +271,7 @@ before exposing it beyond your own machine:</p>
   <li><strong>HTTPS-only:</strong> plain-HTTP URLs are refused by the secure fetcher.</li>
   <li><strong>Host allowlist (SSRF guard):</strong> restrict which hosts the server may fetch:</li>
 </ul>
-<pre><code>RECEIPTGUARD_ALLOWED_HOSTS="apps.cbe.com.et,transactioninfo.ethiotelecom.et" python webapp.py</code></pre>
+<pre><code>zebebgna_ALLOWED_HOSTS="apps.cbe.com.et,transactioninfo.ethiotelecom.et" python webapp.py</code></pre>
 <ul>
   <li><strong>Authentication:</strong> put the app behind a reverse proxy with a login (e.g. basic auth or SSO).</li>
   <li><strong>Binding:</strong> the default binds to <code>127.0.0.1</code> only &mdash; keep it that way unless you truly need remote access.</li>
@@ -358,10 +358,10 @@ which builds the receipt URL from an FT number plus the last 8 digits of the acc
 <h1>12. Testing</h1>
 <pre><code>pip install -e ".[dev]"
 pytest tests/</code></pre>
-<p>The suite (25 tests) covers URL/phishing heuristics, integrity math, report scoring, secure-fetch
-refusals, the TLS failure path, the full verification pipeline (network mocked), and the web UI
-form/report/allowlist behavior. Live-network extraction tests are deliberately not part of the
-default suite.</p>
+<p>The suite (96 tests) covers URL/phishing heuristics, integrity math, report scoring, the SSRF
+guard (private hosts, redirect re-validation, allowlists), secure-fetch refusals, the TLS failure
+path, the full verification pipeline (network mocked), and the web UI form/report/allowlist
+behavior. Live-network extraction tests are deliberately not part of the default suite.</p>
 
 <!-- ================= 13. STRUCTURE ================= -->
 <h1>13. Project Structure</h1>
@@ -379,7 +379,7 @@ default suite.</p>
 |   |   +-- cbe.py  dashen.py  awash.py  boa.py  zemen.py  tele.py
 |   +-- verifiers/            # security check groups
 |       +-- phishing.py  tls.py  headers.py  integrity.py
-+-- tests/                    # 25 tests (verifiers + web UI)
++-- tests/                    # 96 tests (verifiers + SSRF + web UI)
 +-- docs/                     # this documentation</code></pre>
 
 <!-- ================= 14. LIMITATIONS ================= -->

@@ -1,7 +1,7 @@
 """Dashen Bank receipt extraction (PDF) with secure fetching."""
 
+import io
 import re
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import pdfplumber
@@ -10,14 +10,11 @@ from zebebgna.fetch import fetcher
 
 
 def extract_dashen_receipt_data(url):
-    pdf_path = fetcher.fetch_pdf(url)
-
     def extract_page_text(page):
         return page.extract_text()
 
-    with pdfplumber.open(pdf_path) as pdf:
-        with ThreadPoolExecutor() as executor:
-            texts = list(executor.map(extract_page_text, pdf.pages))
+    with pdfplumber.open(io.BytesIO(fetcher.fetch_pdf_bytes(url))) as pdf:
+        texts = [extract_page_text(page) for page in pdf.pages]
         text = "\n".join(text for text in texts if text)
 
     patterns = {
@@ -38,11 +35,10 @@ def extract_dashen_receipt_data(url):
         "amount_in_words": re.compile(r"Amount in words:\s*(.+?)\n"),
     }
 
-    data = {
-        key: (pattern.search(text).group(1).strip()
-              if pattern.search(text) else None)
-        for key, pattern in patterns.items()
-    }
+    data = {}
+    for key, pattern in patterns.items():
+        match = pattern.search(text)
+        data[key] = match.group(1).strip() if match else None
 
     try:
         dt = datetime.strptime(data["transaction_date"], "%b %d, %Y, %I:%M:%S %p")

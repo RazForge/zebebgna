@@ -24,7 +24,11 @@ SHORTENERS = {
     "cutt.ly", "shorturl.at", "ow.ly",
 }
 
-IP_HOST_RE = re.compile(r"^\d{1,3}(\.\d{1,3}){3}$")
+# Only syntactically valid IPv4 literals (each octet 0-255) are flagged.
+IP_HOST_RE = re.compile(
+    r"^(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)"
+    r"(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$"
+)
 PUNYCODE_RE = re.compile(r"^xn--")
 
 LOOKALIKE_THRESHOLD = 0.72

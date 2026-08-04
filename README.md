@@ -4,7 +4,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-25%20passed-1a7f37)]()
+[![Tests](https://img.shields.io/badge/tests-96%20passed-1a7f37)]()
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-0f172a)]()
 [![Banks](https://img.shields.io/badge/Banks-6%20supported-1d4ed8)]()
 

@@ -22,10 +22,10 @@ import difflib
 import re
 from urllib.parse import urlparse
 
-from zebebgna.report import PENALTIES
+from zebebgna.report import SEVERITY_WEIGHTS, has_receipt_data
 from zebebgna.verifiers import phishing
 
-RISK_WEIGHTS = {"info": 2, "warn": 8, "error": 20, "high": 35, "critical": 50}
+RISK_WEIGHTS = SEVERITY_WEIGHTS
 
 RISK_LEVELS = ((70, "CRITICAL"), (45, "HIGH"), (20, "MEDIUM"), (0, "LOW"))
 
@@ -433,7 +433,7 @@ def assess(report, feedback=None):
     # A receipt whose details could not be extracted cannot be verified at
     # all: that alone is a high-risk, unverified state regardless of how
     # clean the endpoint looks.
-    unreadable = report.bank is not None and not report.data
+    unreadable = report.bank is not None and not has_receipt_data(report.data)
     if unreadable:
         correlations.append(
             Correlation(
@@ -448,7 +448,7 @@ def assess(report, feedback=None):
     # Worst single finding (verifier-level) feeds the fused score too, so a
     # critical verifier finding can never be masked by a clean fusion pass.
     worst_verifier = max(
-        (PENALTIES[f.severity] for f in report.findings),
+        (SEVERITY_WEIGHTS.get(f.severity, 0) for f in report.findings),
         default=0,
     )
     fused = sum(RISK_WEIGHTS.get(c.severity, 0) for c in correlations)
@@ -467,7 +467,7 @@ def assess(report, feedback=None):
             break
 
     indicators = _build_indicators(report, signals, correlations)
-    indicators["receipt_readable"] = bool(report.data)
+    indicators["receipt_readable"] = has_receipt_data(report.data)
     return ThreatAssessment(
         risk_score=risk_score,
         correlations=correlations,

@@ -48,7 +48,9 @@ def _db_path():
 
 def _connect():
     path = _db_path()
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    # ``dirname`` of a bare filename is "" and makedirs would fail; resolve
+    # to an absolute path first so a plain "checks.db" works too.
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     conn = sqlite3.connect(path)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.executescript(_SCHEMA)

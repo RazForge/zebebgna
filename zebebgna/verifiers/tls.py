@@ -10,6 +10,13 @@ def _parse_ascii_time(value):
     return datetime.datetime.strptime(value, "%b %d %H:%M:%S %Y %Z")
 
 
+def _as_utc(dt):
+    """Ensure the parsed cert timestamp is UTC-aware (certs are in GMT)."""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=datetime.timezone.utc)
+    return dt.astimezone(datetime.timezone.utc)
+
+
 def audit_tls(url, report):
     """Connect to the URL's host over TLS and audit the presented certificate."""
     parsed = urlparse(url)
@@ -44,15 +51,15 @@ def audit_tls(url, report):
         return
 
     try:
-        not_before = _parse_ascii_time(cert["notBefore"])
-        not_after = _parse_ascii_time(cert["notAfter"])
+        not_before = _as_utc(_parse_ascii_time(cert["notBefore"]))
+        not_after = _as_utc(_parse_ascii_time(cert["notAfter"]))
     except (KeyError, ValueError):
         report.add_finding(
             "error", "tls", "Certificate validity dates could not be parsed"
         )
         return
 
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc)
     if now > not_after:
         report.add_finding(
             "critical", "tls",

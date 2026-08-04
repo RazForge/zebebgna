@@ -27,7 +27,7 @@ zebebgna = ["templates/*.html"]
 Homepage = "https://github.com/natahanjr/zebebgna"
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "flake8"]
 web = ["flask"]
 
 [project.scripts]

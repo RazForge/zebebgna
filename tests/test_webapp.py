@@ -272,3 +272,18 @@ def test_history_missing_check(client, db):
     resp = client.get("/history/99999")
     assert resp.status_code == 200
     assert b"No stored check" in resp.data
+
+
+def test_history_clear_button(client, db):
+    history.record(_report())
+    assert len(history.list_checks()) == 1
+    resp = client.post("/history/clear")
+    assert resp.status_code == 302
+    assert history.list_checks() == []
+
+
+def test_history_page_shows_clear_button(client, db):
+    history.record(_report())
+    resp = client.get("/history")
+    assert resp.status_code == 200
+    assert b"Clear all" in resp.data
