@@ -18,9 +18,10 @@ from urllib.parse import urlparse
 import requests
 from flask import Flask, redirect, render_template, request, url_for
 
-from zebebgna import verify_receipt
+from zebebgna import verify_extracted_data, verify_file, verify_receipt
 from zebebgna.fetch import InsecureURLError, fetcher, host_is_private_literal
 from zebebgna.verifiers import phishing
+from zebebgna.vision import OCRUnavailable, scan_fields
 
 PKG_DIR = os.path.dirname(os.path.abspath(__import__("zebebgna").__file__))
 TEMPLATE_DIR = os.path.join(PKG_DIR, "templates")
@@ -181,32 +182,64 @@ def index():
 def verify():
     bank = request.form.get("bank", "").strip().lower()
     url_or_id = request.form.get("url_or_id", "").strip()
+    pasted_text = request.form.get("text", "").strip()
+    upload = request.files.get("file")
 
-    if not url_or_id:
+    if not url_or_id and not pasted_text and not (upload and upload.filename):
         return render_template(
             "index.html", banks=BANK_NAMES,
-            error="Please paste a receipt link (or Telebirr receipt ID) first.",
+            error="Paste a receipt link (or Telebirr receipt ID), paste "
+                  "receipt text, or upload a PDF/screenshot first.",
         )
 
-    url = _normalize_url(bank, url_or_id)
-    if url.startswith("http"):
-        if not _host_allowed(url):
-            return render_template(
-                "index.html", banks=BANK_NAMES,
-                error=(
-                    "This link points to a website that is not in the allowed "
-                    "list. Only trusted receipt websites can be checked."
-                ),
-            )
-    else:
-        return render_template(
-            "index.html", banks=BANK_NAMES,
-            error="That does not look like a valid receipt link.",
-        )
+    from zebebgna import history
 
     try:
-        report = verify_receipt(
-            bank, url_or_id, feedback=_domain_feedback(url)
+        if upload and upload.filename:
+            import tempfile
+
+            lower = upload.filename.lower()
+            suffix = os.path.splitext(lower)[1] or ".png"
+            with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=suffix) as tmp:
+                upload.save(tmp.name)
+                path = tmp.name
+            try:
+                report = verify_file(bank, path)
+            finally:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+        elif pasted_text:
+            report = verify_extracted_data(
+                bank, scan_fields(bank, pasted_text), source="pasted-text"
+            )
+        else:
+            url = _normalize_url(bank, url_or_id)
+            if url.startswith("http"):
+                if not _host_allowed(url):
+                    return render_template(
+                        "index.html", banks=BANK_NAMES,
+                        error=(
+                            "This link points to a website that is not in "
+                            "the allowed list. Only trusted receipt websites "
+                            "can be checked."
+                        ),
+                    )
+            else:
+                return render_template(
+                    "index.html", banks=BANK_NAMES,
+                    error="That does not look like a valid receipt link.",
+                )
+            report = verify_receipt(
+                bank, url_or_id, feedback=_domain_feedback(url)
+            )
+    except OCRUnavailable as exc:
+        return render_template(
+            "index.html", banks=BANK_NAMES,
+            error=(f"{exc}. You can still upload PDFs or paste the receipt "
+                   f"text."),
         )
     except (ValueError, InsecureURLError) as exc:
         return render_template(
@@ -215,7 +248,7 @@ def verify():
     except (requests.ConnectionError, requests.Timeout) as exc:
         app.logger.error(
             "Network error verifying receipt bank=%r url=%r: %s",
-            bank, url, exc, exc_info=True,
+            bank, url_or_id, exc, exc_info=True,
         )
         return render_template(
             "index.html", banks=BANK_NAMES,
@@ -227,8 +260,8 @@ def verify():
         )
     except Exception as exc:
         app.logger.error(
-            "Receipt verification failed for bank=%r url=%r: %s",
-            bank, url, exc, exc_info=True,
+            "Receipt verification failed for bank=%r input=%r: %s",
+            bank, url_or_id or upload.filename, exc, exc_info=True,
         )
         return render_template(
             "index.html", banks=BANK_NAMES,
@@ -249,6 +282,8 @@ def verify():
     context = _report_context(report)
     context.update(
         report=report,
+        ai_review=report.ai_review,
+        check_id=report.check_id,
         bank_name=BANK_NAMES.get(report.bank, report.bank),
         severity_labels=SEVERITY_LABELS,
     )
@@ -277,7 +312,32 @@ def history_view(check_id):
     context = _report_context(report)
     context.update(
         report=report,
+        ai_review=report.ai_review,
         check_id=check["id"],
+        bank_name=BANK_NAMES.get(report.bank, report.bank or "audit"),
+        severity_labels=SEVERITY_LABELS,
+    )
+    return render_template("report.html", **context)
+
+
+@app.route("/share/<int:check_id>")
+def share_view(check_id):
+    """Public shareable link: same stored report, no admin chrome."""
+    from zebebgna import history
+
+    check = history.get_check(check_id)
+    if not check:
+        return render_template(
+            "index.html", banks=BANK_NAMES,
+            error=f"No stored check with id {check_id}.",
+        )
+    report = history.report_from_record(check)
+    context = _report_context(report)
+    context.update(
+        report=report,
+        ai_review=report.ai_review,
+        check_id=check["id"],
+        share=True,
         bank_name=BANK_NAMES.get(report.bank, report.bank or "audit"),
         severity_labels=SEVERITY_LABELS,
     )

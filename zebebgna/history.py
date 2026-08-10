@@ -38,12 +38,61 @@ CREATE TABLE IF NOT EXISTS checks (
 CREATE INDEX IF NOT EXISTS idx_checks_ts ON checks(ts);
 """
 
+_THREAT_SCHEMA = """
+CREATE TABLE IF NOT EXISTS threat_domains (
+    domain TEXT PRIMARY KEY,
+    reason TEXT,
+    ts TEXT NOT NULL,
+    source TEXT
+);
+"""
+
 
 def _db_path():
     return os.environ.get(
         "ZEBEBGNA_DB",
         os.path.join(os.path.expanduser("~"), ".zebebgna", "checks.db"),
     )
+
+
+def db_path():
+    """Absolute path of the local history database."""
+    return os.path.abspath(_db_path())
+
+
+def export_sql(path):
+    """Dump the whole database (checks + threat domains) to ``path``.
+
+    Returns the number of SQL statements written.
+    """
+    conn = _connect()
+    try:
+        sql = "\n".join(conn.iterdump())
+    finally:
+        conn.close()
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(sql + "\n")
+    return sql.count("\n")
+
+
+def import_sql(path):
+    """Restore a database from an ``export_sql`` dump.
+
+    The existing local checks and threat domains are replaced by the
+    dump content (restore semantics). Returns the number of SQL
+    statements executed.
+    """
+    with open(path, "r", encoding="utf-8") as fh:
+        sql = fh.read()
+    conn = _connect()
+    try:
+        conn.execute("DROP TABLE IF EXISTS checks")
+        conn.execute("DROP TABLE IF EXISTS threat_domains")
+        cur = conn.executescript(sql)
+        conn.commit()
+    finally:
+        conn.close()
+    return cur.rowcount
 
 
 def _connect():
@@ -54,6 +103,7 @@ def _connect():
     conn = sqlite3.connect(path)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.executescript(_SCHEMA)
+    conn.executescript(_THREAT_SCHEMA)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -179,4 +229,86 @@ def report_from_record(check):
         )
     if payload.get("threat"):
         report.threat = ThreatAssessment.from_dict(payload["threat"])
+    ai_review = payload.get("ai_review")
+    if ai_review:
+        from zebebgna.llm import AIVerdict
+
+        report.ai_review = AIVerdict.from_dict(ai_review)
     return report
+
+
+# -- community phishing-domain database ---------------------------------------
+
+def add_threat_domain(domain, reason=None, source=None):
+    """Record a registered domain as community-reported phishing.
+
+    Returns True when newly added, False when already known.
+    """
+    domain = (domain or "").strip().lower().lstrip("*.").lstrip(".")
+    if not domain:
+        return False
+    conn = _connect()
+    try:
+        cur = conn.execute(
+            "INSERT OR IGNORE INTO threat_domains (domain, reason, ts, source)"
+            " VALUES (?, ?, ?, ?)",
+            (domain, reason, datetime.now().isoformat(timespec="seconds"),
+             source),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+    finally:
+        conn.close()
+
+
+def remove_threat_domain(domain):
+    """Remove a domain from the threat database. Returns rows removed."""
+    domain = (domain or "").strip().lower()
+    conn = _connect()
+    try:
+        cur = conn.execute(
+            "DELETE FROM threat_domains WHERE domain = ?", (domain,)
+        )
+        conn.commit()
+        return cur.rowcount
+    finally:
+        conn.close()
+
+
+def list_threat_domains():
+    conn = _connect()
+    try:
+        rows = conn.execute(
+            "SELECT * FROM threat_domains ORDER BY ts DESC"
+        ).fetchall()
+        return [dict(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def is_threat_domain(registered_domain):
+    """True when a registered domain sits in the community threat DB."""
+    if not registered_domain:
+        return False
+    conn = _connect()
+    try:
+        row = conn.execute(
+            "SELECT 1 FROM threat_domains WHERE domain = ?",
+            (str(registered_domain).lower(),),
+        ).fetchone()
+        return row is not None
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+
+def clear_threat_domains():
+    """Delete all community-reported domains. Returns the number removed."""
+    conn = _connect()
+    try:
+        cur = conn.execute("DELETE FROM threat_domains")
+        conn.commit()
+        return cur.rowcount
+    finally:
+        conn.close()

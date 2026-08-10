@@ -100,7 +100,35 @@ zebebgna verify tele CHQ0FJ403O
 
 # Transport/URL security audit only
 zebebgna audit "https://receipt.dashensuperapp.com/receipt/387ETAP2522000WK"
+
+# Pasted receipt text, batch checks, history & feedback
+zebebgna verify-text cbe "Transaction ID: ... Amount: 1,000.00"
+zebebgna batch cbe --file urls.txt
+zebebgna history
+zebebgna feedback 42 --wrong --report-phish "fake receipt in Telegram"
+
+# Community phishing database + operational tooling
+zebebgna threatdb list
+zebebgna watch cbe "https://apps.cbe.com.et:100/?id=..." --every 120 --count 10
+zebebgna backup export backup.sql
+zebebgna backup import backup.sql
+zebebgna config show
 ```
+
+## 🤖 Telegram bot (optional)
+
+```bash
+pip install -e ".[bot]"
+set ZEBEBGNA_TELEGRAM_TOKEN=your_token
+python -m zebebgna.bot
+```
+
+Then chat with the bot: `/verify cbe <link>`, `/verify tele <ID>`,
+`/verifytext <bank> <receipt text>`, or send a receipt screenshot/PDF with
+the bank name in the caption.
+
+Also installs `zebebgna.webapp` and the `/share/<check_id>` archived-report
+links on the web UI (Share chip on fresh verdict pages).
 
 ## 🌐 Web UI (for non-technical users)
 

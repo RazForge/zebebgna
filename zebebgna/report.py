@@ -61,6 +61,7 @@ class VerificationReport:
         self.data = data or {}
         self.findings = []
         self.threat = None
+        self.ai_review = None
         self.check_id = None
 
     def add_finding(self, severity, category, message):
@@ -109,4 +110,5 @@ class VerificationReport:
             "extracted_data": self.data,
             "findings": [f.to_dict() for f in self.findings],
             "threat": self.threat.to_dict() if self.threat else None,
+            "ai_review": self.ai_review.to_dict() if self.ai_review else None,
         }
