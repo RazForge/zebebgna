@@ -8,13 +8,12 @@ verifications do not leak Chrome processes.
 
 import atexit
 import logging
-from functools import lru_cache
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 
 from zebebgna.fetch import fetcher, validate_fetch_target
 
@@ -22,9 +21,17 @@ log = logging.getLogger(__name__)
 
 MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
 
+_driver = None
 
-@lru_cache(maxsize=1)
+
 def get_chrome_driver():
+    global _driver
+    if _driver is not None:
+        try:
+            _driver.title  # quick health check
+            return _driver
+        except Exception:
+            _driver = None  # driver is dead, create a new one
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--disable-dev-shm-usage")
@@ -32,9 +39,9 @@ def get_chrome_driver():
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-background-networking")
-    driver = webdriver.Chrome(options=options)
-    atexit.register(driver.quit)
-    return driver
+    _driver = webdriver.Chrome(options=options)
+    atexit.register(lambda: _driver.quit() if _driver else None)
+    return _driver
 
 
 def extract_boa_receipt_data(url):
