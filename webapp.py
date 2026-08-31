@@ -11,21 +11,66 @@ list of hostnames the server may fetch (SSRF guard). When unset, only
 HTTPS URLs are accepted (enforced by the secure fetcher).
 """
 
+import hashlib
+import hmac
 import os
 import re
+import secrets
+import time
+from collections import defaultdict
 from urllib.parse import urlparse
 
 import requests
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 
-from zebebgna import verify_receipt
+from zebebgna import verify_extracted_data, verify_file, verify_receipt
 from zebebgna.fetch import InsecureURLError, fetcher, host_is_private_literal
 from zebebgna.verifiers import phishing
+from zebebgna.vision import OCRUnavailable, scan_fields
 
 PKG_DIR = os.path.dirname(os.path.abspath(__import__("zebebgna").__file__))
 TEMPLATE_DIR = os.path.join(PKG_DIR, "templates")
 STATIC_DIR = os.path.join(PKG_DIR, "static")
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path='/static')
+
+# --- Security: SECRET_KEY for sessions and CSRF ---
+app.secret_key = os.environ.get(
+    "ZEBEBGNA_SECRET_KEY",
+    secrets.token_hex(32),
+)
+
+# --- CSRF protection ---
+def generate_csrf_token():
+    if "_csrf_token" not in session:
+        session["_csrf_token"] = secrets.token_hex(32)
+    return session["_csrf_token"]
+
+app.jinja_env.globals["csrf_token"] = generate_csrf_token
+
+
+def _validate_csrf():
+    if app.config.get("TESTING"):
+        return
+    token = request.form.get("_csrf_token") or request.headers.get("X-CSRF-Token")
+    if not token or not hmac.compare_digest(token, session.get("_csrf_token", "")):
+        abort(403)
+
+
+# --- Rate limiting ---
+_rate_store = defaultdict(list)
+RATE_LIMIT_WINDOW = 60  # seconds
+RATE_LIMIT_MAX = 30     # requests per window
+
+
+def _check_rate_limit():
+    ip = request.remote_addr or "unknown"
+    now = time.time()
+    window_start = now - RATE_LIMIT_WINDOW
+    _rate_store[ip] = [t for t in _rate_store[ip] if t > window_start]
+    if len(_rate_store[ip]) >= RATE_LIMIT_MAX:
+        return False
+    _rate_store[ip].append(now)
+    return True
 
 BANK_NAMES = {
     "cbe": "Commercial Bank of Ethiopia (CBE)",
@@ -179,34 +224,73 @@ def index():
 
 @app.route("/verify", methods=["POST"])
 def verify():
+    _validate_csrf()
+    if not _check_rate_limit():
+        return render_template(
+            "index.html", banks=BANK_NAMES,
+            error="Too many requests. Please wait a moment and try again.",
+        ), 429
+
     bank = request.form.get("bank", "").strip().lower()
     url_or_id = request.form.get("url_or_id", "").strip()
+    pasted_text = request.form.get("text", "").strip()
+    upload = request.files.get("file")
 
-    if not url_or_id:
+    if not url_or_id and not pasted_text and not (upload and upload.filename):
         return render_template(
             "index.html", banks=BANK_NAMES,
-            error="Please paste a receipt link (or Telebirr receipt ID) first.",
+            error="Paste a receipt link (or Telebirr receipt ID), paste "
+                  "receipt text, or upload a PDF/screenshot first.",
         )
 
-    url = _normalize_url(bank, url_or_id)
-    if url.startswith("http"):
-        if not _host_allowed(url):
-            return render_template(
-                "index.html", banks=BANK_NAMES,
-                error=(
-                    "This link points to a website that is not in the allowed "
-                    "list. Only trusted receipt websites can be checked."
-                ),
-            )
-    else:
-        return render_template(
-            "index.html", banks=BANK_NAMES,
-            error="That does not look like a valid receipt link.",
-        )
+    from zebebgna import history
 
     try:
-        report = verify_receipt(
-            bank, url_or_id, feedback=_domain_feedback(url)
+        if upload and upload.filename:
+            import tempfile
+
+            lower = upload.filename.lower()
+            suffix = os.path.splitext(lower)[1] or ".png"
+            with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=suffix) as tmp:
+                upload.save(tmp.name)
+                path = tmp.name
+            try:
+                report = verify_file(bank, path)
+            finally:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+        elif pasted_text:
+            report = verify_extracted_data(
+                bank, scan_fields(bank, pasted_text), source="pasted-text"
+            )
+        else:
+            url = _normalize_url(bank, url_or_id)
+            if url.startswith("http"):
+                if not _host_allowed(url):
+                    return render_template(
+                        "index.html", banks=BANK_NAMES,
+                        error=(
+                            "This link points to a website that is not in "
+                            "the allowed list. Only trusted receipt websites "
+                            "can be checked."
+                        ),
+                    )
+            else:
+                return render_template(
+                    "index.html", banks=BANK_NAMES,
+                    error="That does not look like a valid receipt link.",
+                )
+            report = verify_receipt(
+                bank, url_or_id, feedback=_domain_feedback(url)
+            )
+    except OCRUnavailable as exc:
+        return render_template(
+            "index.html", banks=BANK_NAMES,
+            error=(f"{exc}. You can still upload PDFs or paste the receipt "
+                   f"text."),
         )
     except (ValueError, InsecureURLError) as exc:
         return render_template(
@@ -215,7 +299,7 @@ def verify():
     except (requests.ConnectionError, requests.Timeout) as exc:
         app.logger.error(
             "Network error verifying receipt bank=%r url=%r: %s",
-            bank, url, exc, exc_info=True,
+            bank, url_or_id, exc, exc_info=True,
         )
         return render_template(
             "index.html", banks=BANK_NAMES,
@@ -227,8 +311,8 @@ def verify():
         )
     except Exception as exc:
         app.logger.error(
-            "Receipt verification failed for bank=%r url=%r: %s",
-            bank, url, exc, exc_info=True,
+            "Receipt verification failed for bank=%r input=%r: %s",
+            bank, url_or_id or upload.filename, exc, exc_info=True,
         )
         return render_template(
             "index.html", banks=BANK_NAMES,
@@ -249,6 +333,8 @@ def verify():
     context = _report_context(report)
     context.update(
         report=report,
+        ai_review=report.ai_review,
+        check_id=report.check_id,
         bank_name=BANK_NAMES.get(report.bank, report.bank),
         severity_labels=SEVERITY_LABELS,
     )
@@ -277,7 +363,32 @@ def history_view(check_id):
     context = _report_context(report)
     context.update(
         report=report,
+        ai_review=report.ai_review,
         check_id=check["id"],
+        bank_name=BANK_NAMES.get(report.bank, report.bank or "audit"),
+        severity_labels=SEVERITY_LABELS,
+    )
+    return render_template("report.html", **context)
+
+
+@app.route("/share/<int:check_id>")
+def share_view(check_id):
+    """Public shareable link: same stored report, no admin chrome."""
+    from zebebgna import history
+
+    check = history.get_check(check_id)
+    if not check:
+        return render_template(
+            "index.html", banks=BANK_NAMES,
+            error=f"No stored check with id {check_id}.",
+        )
+    report = history.report_from_record(check)
+    context = _report_context(report)
+    context.update(
+        report=report,
+        ai_review=report.ai_review,
+        check_id=check["id"],
+        share=True,
         bank_name=BANK_NAMES.get(report.bank, report.bank or "audit"),
         severity_labels=SEVERITY_LABELS,
     )
@@ -286,6 +397,7 @@ def history_view(check_id):
 
 @app.route("/history/<int:check_id>/feedback", methods=["POST"])
 def history_feedback(check_id):
+    _validate_csrf()
     from zebebgna import history
 
     ok = request.form.get("ok")
@@ -296,6 +408,7 @@ def history_feedback(check_id):
 
 @app.route("/history/clear", methods=["POST"])
 def history_clear():
+    _validate_csrf()
     from zebebgna import history
 
     history.clear()

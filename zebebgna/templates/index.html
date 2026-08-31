@@ -140,17 +140,19 @@
   <main>
     <div class="hero">
       <h1>Is this bank receipt real?</h1>
-      <p>Paste the receipt link, get a clear verdict &mdash; plus a fused threat picture of the endpoint.</p>
+      <p>Paste a receipt link, upload a screenshot or PDF, or paste receipt text &mdash; get a
+        plain-language verdict with the bank's layout fingerprint and fused threat picture.</p>
     </div>
 
     <div class="card">
       <div class="steps">
         <span class="step"><b>1</b>Choose the bank</span>
-        <span class="step"><b>2</b>Paste the receipt link</span>
+        <span class="step"><b>2</b>Paste a link, upload a file, or paste text</span>
         <span class="step"><b>3</b>Get your verdict</span>
       </div>
 
-      <form method="post" action="/verify">
+      <form method="post" action="/verify" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <label for="bank">Bank</label>
         <select id="bank" name="bank">
           {% for key, name in banks.items() %}
@@ -159,11 +161,30 @@
         </select>
 
         <label for="url_or_id" style="margin-top:22px">Receipt link or Telebirr ID</label>
-        <input type="text" id="url_or_id" name="url_or_id" required
+        <input type="text" id="url_or_id" name="url_or_id"
                placeholder="https://...  (or for Telebirr: CHQ0FJ403O)">
         <p class="help">
           Example: <code>https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223</code>
         </p>
+
+        <label for="file" style="margin-top:22px">…or upload a receipt screenshot / PDF</label>
+        <input type="file" id="file" name="file" accept=".png,.jpg,.jpeg,.bmp,.tif,.tiff,.webp,.pdf">
+
+        <label for="text" style="margin-top:22px">…or paste the receipt text</label>
+        <textarea id="text" name="text" rows="5"
+          placeholder="Paste the text shown on the receipt (copy from the PDF or read from the screenshot)"></textarea>
+        <style>
+          textarea {
+            width: 100%; padding: 14px 16px; font-size: 14.5px; color: var(--ink);
+            border: 1.5px solid #d8dbe8; border-radius: 12px; background: #fff;
+            font-family: "Cascadia Code", Consolas, monospace; resize: vertical;
+            transition: border-color .15s, box-shadow .15s;
+          }
+          textarea:focus {
+            outline: none; border-color: var(--indigo);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, .13);
+          }
+        </style>
 
         <button type="submit">Verify receipt</button>
       </form>
@@ -172,6 +193,7 @@
         <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Phishing &amp; lookalike domains</span>
         <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>TLS certificate</span>
         <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Receipt math</span>
+        <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Bank layout fingerprint</span>
         <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Threat fusion</span>
       </div>
 

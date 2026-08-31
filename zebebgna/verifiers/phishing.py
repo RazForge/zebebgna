@@ -21,7 +21,19 @@ KNOWN_BANK_DOMAINS = [
 
 SHORTENERS = {
     "bit.ly", "t.co", "tinyurl.com", "goo.gl", "is.gd", "rb.gy",
-    "cutt.ly", "shorturl.at", "ow.ly",
+    "cutt.ly", "shorturl.at", "ow.ly", "buff.ly", "db.tt", "v.gd",
+    "tiny.cc", "lnkd.in", "snurl.com", "soo.gd", "clck.ru", "t.ly",
+    "short.to", "doiop.com", "縮短网.com", "bc.vc", "adf.ly",
+    "j.mp", "wp.me", "ift.tt", "rebrand.ly", "cort.as",
+}
+
+# TLDs commonly used in phishing but never by legitimate Ethiopian banks.
+SUSPICIOUS_TLDS = {
+    ".xyz", ".top", ".buzz", ".tk", ".ml", ".ga", ".cf", ".gq",
+    ".work", ".click", ".download", ".racing", ".win", ".bid",
+    ".stream", ".date", ".review", ".party", ".trade", ".accountant",
+    ".science", ".cricket", ".faith", ".loan", ".men", ".hair",
+    ".mom", ".ireland", ".tokyo", ".surf", ".cfd", ".cyou", ".sbs",
 }
 
 # Only syntactically valid IPv4 literals (each octet 0-255) are flagged.
@@ -71,8 +83,9 @@ def audit_url(url, report):
 
     if PUNYCODE_RE.match(host):
         report.add_finding(
-            "warn", "url",
-            f"Host uses punycode (IDN) encoding: {host}",
+            "critical", "url",
+            f"Host uses punycode (IDN) encoding: {host}; "
+            "IDN homograph attacks use this to impersonate bank domains",
         )
 
     if port and port != 443:
@@ -85,6 +98,15 @@ def audit_url(url, report):
         report.add_finding(
             "warn", "url",
             f"URL shortener domain ({host}) obfuscates the real destination",
+        )
+
+    # Check for suspicious TLDs not used by legitimate Ethiopian banks
+    tld_part = "." + host.rsplit(".", 1)[-1] if "." in host else ""
+    if tld_part in SUSPICIOUS_TLDS:
+        report.add_finding(
+            "critical", "phishing",
+            f"Host uses suspicious TLD '{tld_part}'; legitimate Ethiopian "
+            "bank endpoints use .com.et, .com, or .et TLDs",
         )
 
     for known in KNOWN_BANK_DOMAINS:

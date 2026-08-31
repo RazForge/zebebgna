@@ -349,6 +349,48 @@ RULES = [
             if any("incomplete" in m.lower() for m in s.messages) else []
         ),
     ),
+    (
+        "layout_mismatch",
+        "error",
+        "Receipt does not match the selected bank's layout",
+        "The receipt data carries none of the canonical fields of the "
+        "selected bank; it was likely built from a different bank's "
+        "template or the wrong bank was selected.",
+        lambda s: (
+            ["fingerprint"]
+            if any(
+                "does not match the canonical" in m.lower()
+                for m in s.messages
+            ) else []
+        ),
+    ),
+    (
+        "amount_words_conflict",
+        "error",
+        "Amount digits and amount in words disagree",
+        "The numeric amount and the amount written in words on the "
+        "receipt do not match; a strong forged-receipt signal.",
+        lambda s: (
+            ["amount_words"]
+            if any("amounts disagree" in m.lower() for m in s.messages) else []
+        ),
+    ),
+    (
+        "date_anomaly",
+        "warn",
+        "Unusual receipt date",
+        "The receipt date is unparsable, in the future, or implausibly "
+        "old; doctored receipts often carry malformed dates.",
+        lambda s: (
+            ["date"]
+            if any(
+                key in m.lower()
+                for m in s.messages
+                for key in ("not in a recognizable format", "in the future",
+                            "unusually old")
+            ) else []
+        ),
+    ),
 ]
 
 
@@ -395,7 +437,49 @@ SCENARIOS = [
         "Unverified endpoint: the host is not associated with the official "
         "bank domain. Verify manually before trusting.",
     ),
+    (
+        "layout_mismatch",
+        "Suspected forged receipt: the document does not match the "
+        "selected bank's receipt layout at all.",
+    ),
+    (
+        "amount_words_conflict",
+        "Suspected forged receipt: the amount in digits and the amount "
+        "written in words disagree.",
+    ),
+    (
+        "community_reported",
+        "This domain was reported as phishing or fraud by the Zebebgna "
+        "community; do not trust receipts served from it.",
+    ),
 ]
+
+
+def _append_community_report(report, signals, correlations):
+    """Raise an error-level signal when the domain is community-reported.
+
+    Queries the local threat database (never the network); any failure is
+    silently ignored so fusion stays deterministic and robust.
+    """
+    if not getattr(signals, "registered", None):
+        return
+    try:
+        from zebebgna import history
+
+        reported = history.is_threat_domain(signals.registered)
+    except Exception:
+        reported = False
+    if not reported:
+        return
+    correlations.append(
+        Correlation(
+            "community_reported", "error",
+            "Domain reported as phishing by the community",
+            "This registered domain was reported by users as phishing or "
+            "fraud infrastructure; treat receipts from it as dangerous.",
+            ["community_db"],
+        )
+    )
 
 
 def _feedback_delta(confirmed, rejected):
@@ -427,6 +511,8 @@ def assess(report, feedback=None):
             correlations.append(
                 Correlation(rule_id, severity, title, description, contributing)
             )
+
+    _append_community_report(report, signals, correlations)
 
     correlations.sort(key=lambda c: -RISK_WEIGHTS.get(c.severity, 0))
 

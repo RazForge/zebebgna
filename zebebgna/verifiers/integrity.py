@@ -26,7 +26,7 @@ REQUIRED_FIELDS = {
     "tele": ("total_paid", "status", "payer_name"),
 }
 
-_AMOUNT_TOLERANCE = Decimal("1.00")
+_AMOUNT_TOLERANCE = Decimal("0.01")
 
 
 def _to_decimal(value):
@@ -109,7 +109,7 @@ def verify_integrity(bank, data, report):
         _check_amount_math(
             report, "Dashen transaction total",
             [
-                data.get("transaction_amount"),
+                data.get("amount"),
                 data.get("service_charge"),
                 data.get("vat"),
             ],

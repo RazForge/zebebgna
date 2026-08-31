@@ -29,6 +29,7 @@ Homepage = "https://github.com/natahanjr/zebebgna"
 [project.optional-dependencies]
 dev = ["pytest", "flake8"]
 web = ["flask"]
+bot = ["python-telegram-bot>=22.0"]
 
 [project.scripts]
 zebebgna = "zebebgna.cli:main"

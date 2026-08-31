@@ -70,7 +70,10 @@ def host_is_private(host):
     try:
         infos = socket.getaddrinfo(host, None)
     except socket.gaierror:
-        return False
+        # Fail closed: if DNS resolution fails, treat the host as private
+        # to prevent potential DNS rebinding attacks where DNS could rebind
+        # to a private IP after the check.
+        return True
     for info in infos:
         try:
             ip = ipaddress.ip_address(info[4][0])

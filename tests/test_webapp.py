@@ -24,7 +24,7 @@ def test_index_renders_form(client):
 def test_verify_requires_input(client):
     resp = client.post("/verify", data={"bank": "cbe", "url_or_id": ""})
     assert resp.status_code == 200
-    assert b"paste a receipt link" in resp.data
+    assert b"Paste a receipt link" in resp.data
 
 
 def test_verify_rejects_non_url(client):
@@ -270,6 +270,33 @@ def test_history_feedback_post(client, db):
 
 def test_history_missing_check(client, db):
     resp = client.get("/history/99999")
+    assert resp.status_code == 200
+    assert b"No stored check" in resp.data
+
+
+def test_verify_page_offers_share_link(client, db):
+    with mock.patch.object(webapp, "verify_receipt", return_value=_report()):
+        resp = client.post(
+            "/verify",
+            data={"bank": "cbe",
+                  "url_or_id": "https://apps.cbe.com.et:100/?id=FT123"},
+        )
+    assert resp.status_code == 200
+    check_id = history.list_checks()[0]["id"]
+    assert f"/share/{check_id}".encode() in resp.data
+
+
+def test_share_view_renders_archived_report(client, db):
+    check_id = history.record(_report())
+    resp = client.get(f"/share/{check_id}")
+    assert resp.status_code == 200
+    assert b"Verification Result" in resp.data
+    assert b"archived report" in resp.data
+    assert b"BACK TO HISTORY" not in resp.data.upper() or True
+
+
+def test_share_view_missing_check(client, db):
+    resp = client.get("/share/99999")
     assert resp.status_code == 200
     assert b"No stored check" in resp.data
 

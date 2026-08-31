@@ -1,11 +1,14 @@
 """Telebirr (Ethio Telecom) receipt extraction with secure fetching."""
 
+import logging
 import re
 from typing import Dict
 
 from bs4 import BeautifulSoup
 
 from zebebgna.fetch import fetcher
+
+log = logging.getLogger(__name__)
 
 # Total Paid Amount is the only reliable amount on Telebirr receipts; the
 # breakdown (principal + service charge) is not exposed as separate labelled
@@ -46,4 +49,9 @@ def extract_tele_receipt_data(url_or_id: str) -> Dict[str, str]:
         "http") else f"https://transactioninfo.ethiotelecom.et/receipt/{url_or_id}"
 
     soup = BeautifulSoup(fetcher.fetch_text(url), "html.parser")
-    return _extract_from_soup(soup)
+    data = _extract_from_soup(soup)
+    expected = {"payer_name", "status", "reference_no", "total_paid"}
+    missing = [k for k in expected if k not in data]
+    if missing:
+        log.warning("Telebirr extraction missing fields: %s", ", ".join(missing))
+    return data

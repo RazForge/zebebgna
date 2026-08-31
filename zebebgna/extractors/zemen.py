@@ -1,12 +1,15 @@
 """Zemen Bank receipt extraction (PDF) with secure fetching."""
 
 import io
+import logging
 import re
 from datetime import datetime
 
 import pdfplumber
 
 from zebebgna.fetch import fetcher
+
+log = logging.getLogger(__name__)
 
 
 def extract_zemen_receipt_data(url):
@@ -46,6 +49,10 @@ def extract_zemen_receipt_data(url):
             if any(x in field for x in ("Amount", "Charge", "VAT")):
                 value = f"ETB {value}"
             result[field] = value
+
+    missing = [f for f in patterns if f not in result]
+    if missing:
+        log.warning("Zemen extraction missing fields: %s", ", ".join(missing))
 
     try:
         date_str = result.get("Date")

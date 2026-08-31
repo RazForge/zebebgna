@@ -1,8 +1,12 @@
 """Awash Bank receipt extraction (HTML table) with secure fetching."""
 
+import logging
+
 from bs4 import BeautifulSoup
 
 from zebebgna.fetch import fetcher
+
+log = logging.getLogger(__name__)
 
 
 def extract_awash_receipt_data(url):
@@ -24,4 +28,8 @@ def extract_awash_receipt_data(url):
         "Beneficiary Account", "Beneficiary Bank", "Reason", "Transaction ID",
     ]
 
-    return {k: data.get(k) for k in keys_of_interest}
+    result = {k: data.get(k) for k in keys_of_interest}
+    missing = [k for k, v in result.items() if v is None]
+    if missing:
+        log.warning("Awash extraction missing fields: %s", ", ".join(missing))
+    return result

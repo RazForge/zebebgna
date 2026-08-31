@@ -1,12 +1,15 @@
 """CBE receipt extraction (PDF) with secure fetching."""
 
 import io
+import logging
 import re
 from datetime import datetime
 
 import pdfplumber
 
 from zebebgna.fetch import fetcher
+
+log = logging.getLogger(__name__)
 
 
 def extract_cbe_receipt_info(url):
@@ -41,6 +44,10 @@ def extract_cbe_receipt_info(url):
     for key, pattern in patterns.items():
         match = pattern.search(full_text)
         data[key] = match.group(1).strip() if match else None
+
+    missing = [k for k, v in data.items() if v is None]
+    if missing:
+        log.warning("CBE extraction missing fields: %s", ", ".join(missing))
 
     payment_date_str = data.get("payment_date")
     if payment_date_str:

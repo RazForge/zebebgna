@@ -55,7 +55,7 @@
   <div class="tagline">&#8220;Guard&#8221; &mdash; Defensive verification of Ethiopian bank receipts</div>
   <div class="meta">
     Version 0.1.0<br>
-    Cybersecurity toolkit &middot; CLI + Web UI<br>
+    Cybersecurity toolkit &middot; CLI + Web UI + Telegram Bot<br>
     CBE &middot; Dashen &middot; Awash &middot; BOA &middot; Zemen &middot; Telebirr<br><br>
     https://github.com/natahanjr/zebebgna
   </div>
@@ -71,23 +71,24 @@
     <li>4. Architecture</li>
     <li>5. Installation</li>
     <li>6. Command-Line Interface (CLI)
-      <div class="lvl2">6.1 Verify a receipt &middot; 6.2 Audit an endpoint &middot; 6.3 Sample output</div>
+      <div class="lvl2">6.1 Verify a receipt &middot; 6.2 Audit an endpoint &middot; 6.3 Batch, text &amp; history &middot; 6.4 Threat DB &middot; 6.5 Operational tooling &middot; 6.6 Sample output</div>
     </li>
     <li>7. Python API
-      <div class="lvl2">7.1 verify_receipt &middot; 7.2 audit_receipt_url &middot; 7.3 VerificationReport &amp; Finding</div>
+      <div class="lvl2">7.1 verify_receipt &middot; 7.2 audit_receipt_url &middot; 7.3 Vision / LLM &middot; 7.4 VerificationReport &amp; Finding</div>
     </li>
     <li>8. Web UI for Non-Technical Users
-      <div class="lvl2">8.1 Running &middot; 8.2 Hardening for shared use</div>
+      <div class="lvl2">8.1 Running &middot; 8.2 Hardening for shared use &middot; 8.3 History &amp; shareable report links</div>
     </li>
-    <li>9. Security Checks Reference
-      <div class="lvl2">9.1 URL / phishing &middot; 9.2 TLS &middot; 9.3 Security headers &middot; 9.4 Integrity</div>
-    </li>
+    <li>9. Security Checks Reference</li>
     <li>10. Risk Scoring &amp; Verdicts</li>
-    <li>11. Supported Banks &amp; Reference Formats</li>
-    <li>12. Testing</li>
-    <li>13. Project Structure</li>
-    <li>14. Limitations &amp; Deployment Notes</li>
-    <li>15. License</li>
+    <li>11. Threat Fusion Engine</li>
+    <li>12. Community Phishing Database &amp; Feedback Loop</li>
+    <li>13. Telegram Bot</li>
+    <li>14. Supported Banks &amp; Reference Formats</li>
+    <li>15. Testing</li>
+    <li>16. Project Structure</li>
+    <li>17. Limitations &amp; Deployment Notes</li>
+    <li>18. License</li>
   </ol>
 </div>
 
@@ -131,6 +132,12 @@ the receipt it fetches, and it never disables security checks to make a connecti
   <tr><td>&#129518; Security headers audit</td><td>Checks HSTS (incl. <code>includeSubDomains</code>), CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy.</td></tr>
   <tr><td>&#128269; Authenticity verification</td><td>Cross-field amount reconciliation (e.g. transferred + commission + VAT &asymp; total debited), per-bank reference-number format checks, transaction-status validation, completeness checks.</td></tr>
   <tr><td>&#128202; Risk scoring</td><td>Every check yields a severity-tagged finding; the report summarizes a 0&ndash;100 score and a PASS / REVIEW / FAIL verdict.</td></tr>
+  <tr><td>&#9889; Threat fusion</td><td>A deterministic rule engine (<code>zebebgna/fusion.py</code>) correlates weak signals across check groups into attack scenarios (lookalike phishing infrastructure, forged receipts, weak hardening) with a fused 0&ndash;100 risk score and LOW / MEDIUM / HIGH / CRITICAL level.</td></tr>
+  <tr><td>&#128203; History &amp; feedback loop</td><td>Every check can be stored in local SQLite; users mark verdicts correct/wrong and the per-domain feedback nudges future risk scores. A community phishing-domain database (<code>threatdb</code>) raises an error-level signal for reported domains.</td></tr>
+  <tr><td>&#128065; Vision / OCR &amp; AI review</td><td>Receipt text can be pasted or uploaded as a PDF/screenshot; <code>scan_fields()</code> extracts structured fields (English and Amharic amounts, Ge&rsquo;ez numerals, Ethiopian calendar dates). An optional OpenAI-compatible review (<code>ZEBEBGNA_LLM_API_KEY</code>) adds a genuine/suspicious verdict; failures degrade silently.</td></tr>
+  <tr><td>&#128172; Telegram bot</td><td>Optional bot (<code>python -m zebebgna.bot</code>): <code>/verify</code>, <code>/verifytext</code>, and photo/PDF uploads, all returning the same verdicts.</td></tr>
+  <tr><td>&#128279; Shareable reports</td><td>The web UI offers a <code>/share/&lt;check_id&gt;</code> archived-report link for every stored check.</td></tr>
+  <tr><td>&#9201; Operational tooling</td><td><code>zebebgna watch</code> re-verifies on a schedule, <code>zebebgna backup export|import</code> dumps/restores the database, and <code>zebebgna config show</code> displays the effective configuration.</td></tr>
   <tr><td>&#9889; High performance</td><td>Connection pooling via <code>requests.Session</code>; multithreaded PDF parsing; cached Chrome driver for BOA receipts.</td></tr>
 </table>
 
@@ -150,32 +157,37 @@ audit only endpoints you own or are authorized to test.
 
 <!-- ================= 4. ARCHITECTURE ================= -->
 <h1>4. Architecture</h1>
-<pre><code>                 +---------------------------+
-                 |   zabagna / zebebgna CLI  |
-                 |   webapp.py (Flask UI)    |
-                 +-------------+-------------+
-                               |
-                               v
-                 +---------------------------+
-                 |   verify_receipt(bank,..) |
-                 |   audit_receipt_url(url)  |
-                 +-------------+-------------+
-                               |
-        +----------------------+----------------------+
-        v                                             v
-+------------------+                        +------------------------+
-|   EXTRACTORS     |                        |      VERIFIERS         |
-| cbe, dashen,     |                        | phishing, tls,         |
-| awash, boa,      |                        | headers, integrity     |
-| zemen, tele      |                        +------------------------+
-+------------------+                                      |
-        |                                          +-----v-----+
-        v                                          |  Report   |
-+------------------+         findings              | score,    |
-|   SecureFetcher  | ----------------------------> | status    |
-| HTTPS-only,      |                                +-----------+
-| TLS-verified     |
-+------------------+</code></pre>
+<pre><code>                 +--------------------------------------+
+                 |   zebebgna CLI / webapp.py / bot.py  |
+                 +------------------+-------------------+
+                                    |
+                                    v
+                 +--------------------------------------+
+                 |   verify_receipt(bank,..)            |
+                 |   audit_receipt_url(url)             |
+                 |   verify_file / verify_extracted_data|
+                 +------------------+-------------------+
+                                    |
+         +----------------+---------+----------+----------------+
+         v                v                    v                v
++----------------+  +----------------+  +----------------+  +------------------+
+|  EXTRACTORS    |  |  VERIFIERS     |  |  VISION / LLM  |  |  HISTORY DB      |
+| cbe, dashen,   |  | phishing, tls, |  | scan_fields,   |  | checks + threat  |
+| awash, boa,    |  | headers,       |  | fingerprint,   |  | domains, feedback|
+| zemen, tele    |  | integrity      |  | AIVerdict      |  +------------------+
++----------------+  +----------------+  +----------------+          |
+        |                  |                   |                     |
+        +------------------+-------------------+---------------------+
+                           v
+                  +----------------+
+                  |  THREAT FUSION |   deterministic rule table ->
+                  |  (fusion.py)   |   scenarios + 0-100 risk score
+                  +----------------+
+                           v
+                  +----------------+
+                  |  Verification  |
+                  |  Report        |  score, status, threat, ai_review
+                  +----------------+</code></pre>
 <table>
   <tr><th style="width:22%">Component</th><th>Responsibility</th></tr>
   <tr><td><code>zebebgna.fetch</code></td><td><code>SecureFetcher</code> &mdash; HTTPS-only fetching with strict TLS verification, timeouts, bounded redirects, and connection pooling. Refuses non-HTTPS URLs (<code>InsecureURLError</code>).</td></tr>
@@ -190,6 +202,7 @@ audit only endpoints you own or are authorized to test.
 <p>Requires Python 3.8+. From the project directory:</p>
 <pre><code>pip install -e .                 # core (CLI + library)
 pip install -e ".[web]"          # + Flask web UI
+pip install -e ".[bot]"          # + Telegram bot
 pip install -e ".[dev]"          # + pytest</code></pre>
 <p>For BOA receipts, a <strong>ChromeDriver</strong> matching your installed Chrome is required (the
 extractor drives a headless Chrome browser because BOA receipts render client-side).</p>
@@ -199,13 +212,33 @@ extractor drives a headless Chrome browser because BOA receipts render client-si
 <h2>6.1 Verify a receipt</h2>
 <pre><code>zebebgna verify cbe   "https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223"
 zebebgna verify dashen "https://receipt.dashensuperapp.com/receipt/387ETAP2522000WK"
-zebebgna verify tele   CHQ0FJ403O</code></pre>
-<p>Telebirr accepts a bare receipt ID; all other banks require the full receipt URL. If the module
-is not on your PATH, run <code>python -m zebebgna.cli ...</code> instead.</p>
+zebebgna verify tele   CHQ0FJ403O
+zebebgna verify cbe ./receipt-screenshot.png   # local PDF/image file</code></pre>
+<p>Telebirr accepts a bare receipt ID; all other banks require the full receipt URL. A local
+PDF or image path runs OCR-based extraction instead of fetching. If the module is not on your
+PATH, run <code>python -m zebebgna.cli ...</code> instead.</p>
 <h2>6.2 Audit an endpoint</h2>
 <p>Runs only the transport/URL-level checks (phishing, TLS, headers) without extracting receipt data:</p>
 <pre><code>zebebgna audit "https://receipt.dashensuperapp.com/receipt/387ETAP2522000WK"</code></pre>
-<h2>6.3 Sample output</h2>
+<h2>6.3 Batch, pasted text &amp; history</h2>
+<pre><code>zebebgna batch cbe --file urls.txt              # JSON array output
+zebebgna verify-text cbe "Transaction ID: ... Amount: 1,000.00"
+zebebgna history --limit 20
+zebebgna history --clear
+zebebgna feedback 42 --correct | --wrong [--report-phish "reason"]</code></pre>
+<p>All verification runs are stored in the local history database unless <code>--no-save</code> is
+given; <code>feedback</code> marks a past verdict and nudges future risk scores for the same domain,
+and <code>--report-phish</code> also adds the domain to the community phishing database.</p>
+<h2>6.4 Community phishing database</h2>
+<pre><code>zebebgna threatdb add "evil-bank-eth.com" "seen in Telegram"
+zebebgna threatdb list
+zebebgna threatdb remove "evil-bank-eth.com"</code></pre>
+<h2>6.5 Operational tooling</h2>
+<pre><code>zebebgna watch cbe "https://apps.cbe.com.et:100/?id=..." --every 120 --count 10
+zebebgna backup export backup.sql
+zebebgna backup import backup.sql      # replaces local data with the dump
+zebebgna config show</code></pre>
+<h2>6.6 Sample output</h2>
 <pre><code>{
   "url": "https://receipt.dashensuperapp.com/receipt/387ETAP2522000WK",
   "bank": "dashen",
@@ -216,9 +249,17 @@ is not on your PATH, run <code>python -m zebebgna.cli ...</code> instead.</p>
     {"severity": "info", "category": "tls", "message": "Certificate valid until ..."},
     {"severity": "warn", "category": "headers", "message": "Missing security header: Content-Security-Policy"},
     {"severity": "error", "category": "integrity", "message": "Dashen transaction total mismatch: ..."}
-  ]
+  ],
+  "threat": {
+    "risk_level": "MEDIUM",
+    "risk_score": 50,
+    "scenario": "Receipt amounts do not reconcile",
+    "correlations": [{"rule_id": "amount_conflict", "severity": "error", "...": "..."}]
+  }
 }
-SCORE: 74/100   STATUS: REVIEW</code></pre>
+SCORE: 74/100   STATUS: REVIEW
+THREAT: MEDIUM (50/100)
+SCENARIO: Receipt amounts do not reconcile</code></pre>
 
 <!-- ================= 7. PYTHON API ================= -->
 <h1>7. Python API</h1>
@@ -235,7 +276,15 @@ for f in report.findings:
 <p>Transport-only audit (no extraction):</p>
 <pre><code>from zebebgna import audit_receipt_url
 report = audit_receipt_url("https://example-receipt-host/abc123")</code></pre>
-<h2>7.3 VerificationReport &amp; Finding</h2>
+<h2>7.3 Vision, OCR &amp; optional AI review</h2>
+<pre><code>from zebebgna import verify_file, verify_extracted_data
+from zebebgna.vision import scan_fields
+
+report = verify_file("cbe", "receipt.png")                    # PDF/image
+report = verify_extracted_data("tele", scan_fields("tele", text), source="pasted-text")
+print(report.ai_review.verdict)   # genuine | suspicious | unclear (if ZEBEBGNA_LLM_API_KEY set)
+print(report.threat.risk_level)   # LOW | MEDIUM | HIGH | CRITICAL</code></pre>
+<h2>7.4 VerificationReport &amp; Finding</h2>
 <table>
   <tr><th style="width:30%">Attribute</th><th>Description</th></tr>
   <tr><td><code>report.url</code></td><td>The URL that was checked.</td></tr>
@@ -244,6 +293,8 @@ report = audit_receipt_url("https://example-receipt-host/abc123")</code></pre>
   <tr><td><code>report.findings</code></td><td>List of <code>Finding</code> objects.</td></tr>
   <tr><td><code>report.score</code></td><td>0&ndash;100 security score.</td></tr>
   <tr><td><code>report.status</code></td><td>PASS, REVIEW, or FAIL.</td></tr>
+  <tr><td><code>report.threat</code></td><td><code>ThreatAssessment</code> from the fusion engine (risk score, level, scenario, correlations), or <code>None</code>.</td></tr>
+  <tr><td><code>report.ai_review</code></td><td><code>AIVerdict</code> (genuine / suspicious / unclear) when the optional LLM review ran.</td></tr>
   <tr><td><code>report.to_dict()</code></td><td>Full JSON-serializable report.</td></tr>
 </table>
 <p>Each <code>Finding</code> has <code>severity</code> (info / warn / error / critical), <code>category</code>
@@ -276,6 +327,12 @@ before exposing it beyond your own machine:</p>
   <li><strong>Authentication:</strong> put the app behind a reverse proxy with a login (e.g. basic auth or SSO).</li>
   <li><strong>Binding:</strong> the default binds to <code>127.0.0.1</code> only &mdash; keep it that way unless you truly need remote access.</li>
 </ul>
+<h2>8.3 History &amp; shareable report links</h2>
+<p>The web UI keeps a history of every check (<code>/history</code>) with thumbs-up/down feedback
+buttons, and offers an archived, read-only <strong>share link</strong>
+(<code>/share/&lt;check_id&gt;</code> &mdash; the "Share" chip on a fresh verdict page). Shared pages
+show the same report without the history/admin chrome, so a verified receipt can be referenced
+later without exposing the whole history.</p>
 
 <!-- ================= 9. SECURITY CHECKS ================= -->
 <h1>9. Security Checks Reference</h1>
@@ -340,8 +397,53 @@ verdict wording accounts for this via scoring.</div>
 </table>
 <p>Any <strong>critical</strong> finding forces FAIL regardless of score.</p>
 
-<!-- ================= 11. BANKS ================= -->
-<h1>11. Supported Banks &amp; Reference Formats</h1>
+<!-- ================= 11. FUSION ================= -->
+<h1>11. Threat Fusion Engine</h1>
+<p><code>zebebgna/fusion.py</code> combines weak, individually inconclusive signals across check
+groups into attack scenarios. A deterministic rule table fires when its predicate matches the
+report&rsquo;s signals; each fired rule becomes a <code>Correlation</code> with a severity, and the
+fused <strong>risk score</strong> is weighted by the fired correlations&rsquo; severities
+(no external feeds &mdash; fully reproducible).</p>
+<table>
+  <tr><th style="width:30%">Scenario family</th><th>Fires when</th></tr>
+  <tr><td>Lookalike phishing infrastructure</td><td>Registered domain is suspicious / community-reported and transport hardening is weak.</td></tr>
+  <tr><td>Forged / tampered receipt</td><td>Integrity errors (amount conflicts, bad references) co-occur with missing security headers or weak TLS.</td></tr>
+  <tr><td>Weak hardening</td><td>Only transport-policy weaknesses (headers/TLS) without other signals.</td></tr>
+  <tr><td>Community report</td><td>The registered domain is in the local <code>threat_domains</code> table (error-level signal).</td></tr>
+</table>
+<p>Per-domain user feedback adjusts the risk score deterministically: <strong>&minus;10</strong>
+when &ge; 3 rejected verdicts outweigh confirmations, <strong>+5</strong> in the opposite case
+(capped, and never lifts an unreadable receipt off 0). The adjustment is reported as
+<code>feedback_adjustment</code> on the assessment.</p>
+
+<!-- ================= 12. THREAT DB ================= -->
+<h1>12. Community Phishing Database &amp; Feedback Loop</h1>
+<p>Reported domains live in the local SQLite database (table <code>threat_domains</code>):</p>
+<pre><code>zebebgna threatdb add "evil-bank-eth.com" "fake receipt link on Telegram"
+zebebgna threatdb list
+zebebgna feedback 42 --wrong --report-phish "confirmed scam"</code></pre>
+<p>Once a domain is listed, every later check of that domain gets an error-level
+<code>community_reported</code> correlation in fusion, so the community&rsquo;s experience protects
+every user on the same machine. The web UI and Telegram bot both benefit automatically; there is
+no network upload &mdash; the registry is local by design.</p>
+
+<!-- ================= 13. TELEGRAM BOT ================= -->
+<h1>13. Telegram Bot</h1>
+<pre><code>pip install -e ".[bot]"
+set ZEBEBGNA_TELEGRAM_TOKEN=your_token
+python -m zebebgna.bot</code></pre>
+<ul>
+  <li><code>/verify &lt;bank&gt; &lt;link-or-id&gt;</code> &mdash; verify a receipt link or Telebirr ID.</li>
+  <li><code>/verifytext &lt;bank&gt; &lt;text&gt;</code> &mdash; verify pasted receipt text.</li>
+  <li>Photo / PDF upload with the bank name in the caption &mdash; OCR-based verification.</li>
+  <li>Replies carry the score, verdict, threat level/scenario, findings, and the AI review (if enabled).</li>
+</ul>
+<p>The reply/parsing logic (<code>parse_verify_command</code>, <code>format_verdict</code>) is
+pure and unit-tested without a token; bank aliases (cbe/commercial, boa/abyssinia, tele/telebirr)
+are accepted.</p>
+
+<!-- ================= 14. BANKS ================= -->
+<h1>14. Supported Banks &amp; Reference Formats</h1>
 <table>
   <tr><th>Bank</th><th>Type</th><th>Reference pattern</th><th>Extraction method</th></tr>
   <tr><td>CBE</td><td>Bank</td><td><code>FT</code> + 6&ndash;20 alphanumerics</td><td>PDF (pdfplumber, threaded)</td></tr>
@@ -355,35 +457,44 @@ verdict wording accounts for this via scoring.</div>
 which builds the receipt URL from an FT number plus the last 8 digits of the account.</p>
 
 <!-- ================= 12. TESTING ================= -->
-<h1>12. Testing</h1>
+<h1>15. Testing</h1>
 <pre><code>pip install -e ".[dev]"
 pytest tests/</code></pre>
-<p>The suite (96 tests) covers URL/phishing heuristics, integrity math, report scoring, the SSRF
+<p>The suite (174 tests) covers URL/phishing heuristics, integrity math, report scoring, the SSRF
 guard (private hosts, redirect re-validation, allowlists), secure-fetch refusals, the TLS failure
-path, the full verification pipeline (network mocked), and the web UI form/report/allowlist
-behavior. Live-network extraction tests are deliberately not part of the default suite.</p>
+path, the full verification pipeline (network mocked), the web UI form/report/allowlist behavior,
+history &amp; feedback, the fusion rule table, the threat-domain database and CLI commands, the
+vision/date/amount-words parsers, the optional LLM path, the Telegram bot&rsquo;s pure logic, and
+the <code>watch</code>/<code>backup</code>/<code>config</code> tooling. Live-network extraction
+tests are deliberately not part of the default suite.</p>
 
-<!-- ================= 13. STRUCTURE ================= -->
-<h1>13. Project Structure</h1>
+<!-- ================= 16. STRUCTURE ================= -->
+<h1>16. Project Structure</h1>
 <pre><code>zebebgna/
 +-- pyproject.toml            # package metadata, deps, CLI entry point
 +-- README.md                 # project documentation
 +-- webapp.py                 # Flask web UI for non-technical users
 +-- zebebgna/
-|   +-- __init__.py           # public API: verify_receipt, audit_receipt_url
-|   +-- cli.py                # zebebgna verify / audit commands
+|   +-- __init__.py           # public API: verify_receipt, audit_receipt_url, verify_file, ...
+|   +-- cli.py                # zebebgna verify / audit / batch / watch / backup / config ...
+|   +-- bot.py                # optional Telegram bot
 |   +-- fetch.py              # SecureFetcher (HTTPS-only, TLS-verified)
 |   +-- report.py             # Finding, VerificationReport, scoring
-|   +-- templates/            # web UI pages (index, report)
+|   +-- fusion.py             # threat-fusion rule engine + ThreatAssessment
+|   +-- history.py            # SQLite checks + threat domains + feedback + backup
+|   +-- vision.py             # scan_fields() field extraction (amounts, dates, references)
+|   +-- words.py  dates.py    # Amharic/Ge'ez amount words, Ethiopian calendar dates
+|   +-- llm.py                # optional OpenAI-compatible AI review (AIVerdict)
+|   +-- templates/            # web UI pages (index, report, history)
 |   +-- extractors/           # per-bank parsing
 |   |   +-- cbe.py  dashen.py  awash.py  boa.py  zemen.py  tele.py
 |   +-- verifiers/            # security check groups
-|       +-- phishing.py  tls.py  headers.py  integrity.py
-+-- tests/                    # 96 tests (verifiers + SSRF + web UI)
+|       +-- phishing.py  tls.py  headers.py  integrity.py  fingerprint.py
++-- tests/                    # 174 tests (verifiers + SSRF + fusion + web + bot + ops)
 +-- docs/                     # this documentation</code></pre>
 
-<!-- ================= 14. LIMITATIONS ================= -->
-<h1>14. Limitations &amp; Deployment Notes</h1>
+<!-- ================= 17. LIMITATIONS ================= -->
+<h1>17. Limitations &amp; Deployment Notes</h1>
 <ul>
   <li><strong>Regional restrictions:</strong> Telebirr often blocks or times out requests from foreign IPs
   (403 / ERR_FAILED / DNS failures). It works best from servers inside Ethiopia; VPS providers abroad
@@ -392,13 +503,22 @@ behavior. Live-network extraction tests are deliberately not part of the default
   caches the driver session for performance.</li>
   <li><strong>Regex-based parsing:</strong> extraction relies on each bank&rsquo;s receipt layout. If a bank
   changes its format, patterns in the relevant extractor must be updated.</li>
+  <li><strong>OCR quality:</strong> pasted text and photographed receipts depend on the text quality;
+  <code>verify-text</code> handles common formats but a poor crop can yield missing fields (reported
+  as warnings, never as silent pass).</li>
+  <li><strong>Optional AI review:</strong> the LLM review is advisory and disabled when
+  <code>ZEBEBGNA_LLM_API_KEY</code> is not set; platform or quota failures degrade silently to a
+  deterministic report.</li>
+  <li><strong>Community database is local:</strong> the <code>threat_domains</code> registry never
+  syncs over the network; if you want shared intelligence, export/import the database
+  (<code>zebebgna backup</code>) between machines yourself.</li>
   <li><strong>Passive verification only:</strong> Zebebgna checks what a receipt and its endpoint
   <em>say</em>; it cannot prove the bank&rsquo;s ledger state. It detects tampering, phishing, and weak
   transport &mdash; it is not a replacement for bank statements.</li>
 </ul>
 
-<!-- ================= 15. LICENSE ================= -->
-<h1>15. License</h1>
+<!-- ================= 18. LICENSE ================= -->
+<h1>18. License</h1>
 <p>MIT License &mdash; see <a href="https://opensource.org/licenses/MIT">https://opensource.org/licenses/MIT</a>.</p>
 
 </body>
