@@ -112,7 +112,14 @@ async def _handle_verify(update, context, mode="link"):
                 "Tell me the bank first, e.g. /verifytext cbe <text>"
             )
             return
-        report = _verify_text(bank, target)
+        try:
+            report = _verify_text(bank, target)
+        except Exception as exc:
+            await update.message.reply_text(
+                f"Could not verify: {exc}\nCareful \u2014 do not send "
+                f"sensitive receipt data to untrusted bots."
+            )
+            return
     else:
         bank, target = parse_verify_command(user_text)
         if not bank:
