@@ -25,7 +25,7 @@ import requests
 
 DEFAULT_TIMEOUT = 15
 MAX_REDIRECTS = 5
-USER_AGENT = "zebebgna/0.1 (defensive receipt verification agent)"
+USER_AGENT = "zebebgna/0.2 (defensive receipt verification agent)"
 
 _PRIVATE_HOSTNAMES = {"localhost", "localhost.localdomain", "ip6-localhost"}
 _PRIVATE_HOSTNAME_SUFFIXES = (".local", ".localhost", ".internal")

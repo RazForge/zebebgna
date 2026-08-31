@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zebebgna"
-version = "0.1.0"
+version = "0.2.0"
 description = "Defensive cybersecurity toolkit for verifying Ethiopian bank receipt authenticity and auditing receipt endpoint security"
 readme = "README.md"
 license = "MIT"
