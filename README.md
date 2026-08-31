@@ -255,9 +255,41 @@ Do **not** open a public issue for security vulnerabilities.
 
 ## License
 
-Proprietary — RazForge. See [LICENSE](LICENSE).
+This software is proprietary and owned by [RazForge](https://github.com/RazForge).
 
-For commercial use or inquiries, contact [razforge@hotmail.com](mailto:razforge@hotmail.com).
+### You CAN
+
+- Install and use the Software for personal, non-commercial receipt verification
+- View and study the source code for learning purposes
+- Report bugs and suggest improvements
+
+### You CANNOT
+
+- Copy, distribute, or share the Software to third parties
+- Modify, adapt, or create derivative works
+- Sell, sublicense, or commercially distribute the Software
+- Reverse engineer, decompile, or disassemble the Software
+- Remove or alter any proprietary notices or branding
+- Use the Software to build a competing product or service
+- Bypass any security features or license verification
+
+### Commercial Use
+
+Any commercial use — including embedding in paid products, offering as a managed service, or using in consulting engagements — requires a separate written license agreement.
+
+**Request a commercial license:** [razforge@hotmail.com](mailto:razforge@hotmail.com)
+
+### Intellectual Property
+
+The Software and all associated intellectual property rights are and remain the exclusive property of RazForge. This license grants only a limited right of use as stated above.
+
+### Warranty Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. RazForge is not responsible for any decisions made based on the Software's output. The Software is a verification tool, not a substitute for professional judgment.
+
+### Full License
+
+See [LICENSE](LICENSE) for the complete legal terms.
 
 ---
 
