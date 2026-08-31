@@ -38,6 +38,7 @@ def audit_tls(url, report):
             with context.wrap_socket(sock, server_hostname=host) as tls_sock:
                 cert = tls_sock.getpeercert()
                 protocol = tls_sock.version()
+                der_cert = tls_sock.getpeercert(binary_form=True)
     except ssl.SSLCertVerificationError as exc:
         report.add_finding(
             "critical", "tls",
@@ -69,31 +70,13 @@ def audit_tls(url, report):
         report.add_finding("info", "tls", f"Protocol: {protocol}")
 
     # --- Public key strength check ---
-    try:
-        pubkey_info = cert.get("subjectPublicKeyInfo", ())
-        keyAlgorithm = dict(part[0] for part in pubkey_info).get(
-            "algorithm", {}
-        )
-        keyType = keyAlgorithm.get("algorithm", "")
-        # Python's ssl module does not expose key bits directly via getpeercert,
-        # but we can check the algorithm OID. RSA OID is 1.2.840.113549.1.1.1.
-        # We rely on openssl to have rejected weak keys during handshake.
-        # However, we check the issuer for known weak CA signatures.
-        pass
-    except Exception:
-        pass
+    # Python's ssl module does not expose key bits directly via getpeercert.
+    # We rely on openssl to have rejected weak keys during handshake.
 
-    # --- Signature algorithm check (via openssl transport) ---
-    # Python ssl module does not expose signature algorithm directly.
-    # We check the certificate's 'subject' and 'issuer' for known weak
-    # patterns and rely on the fact that ssl.create_default_context()
-    # rejects SHA-1 signed certs in modern Python.
+    # --- Certificate fingerprint for auditing ---
     try:
-        # Extract raw cert bytes from the connection for hashing
-        der_cert = tls_sock.getpeercert(binary_form=True)
         if der_cert:
             cert_hash = hashlib.sha256(der_cert).hexdigest()
-            # Log the cert fingerprint for auditing
             report.add_finding(
                 "info", "tls",
                 f"Certificate SHA-256 fingerprint: {cert_hash[:16]}...",
