@@ -72,7 +72,7 @@ def export_sql(path):
         conn.close()
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(sql + "\n")
-    return sql.count("\n")
+    return sql.count(";")
 
 
 def import_sql(path):
