@@ -70,6 +70,12 @@ def _check_rate_limit():
     if len(_rate_store[ip]) >= RATE_LIMIT_MAX:
         return False
     _rate_store[ip].append(now)
+    # Evict stale IPs periodically to prevent unbounded growth
+    if len(_rate_store) > 1000:
+        stale = [k for k, v in _rate_store.items()
+                 if not v or v[-1] < window_start]
+        for k in stale:
+            del _rate_store[k]
     return True
 
 BANK_NAMES = {
@@ -310,9 +316,10 @@ def verify():
             ),
         )
     except Exception as exc:
+        input_desc = url_or_id or (upload.filename if upload else "(pasted text)")
         app.logger.error(
             "Receipt verification failed for bank=%r input=%r: %s",
-            bank, url_or_id or upload.filename, exc, exc_info=True,
+            bank, input_desc, exc, exc_info=True,
         )
         return render_template(
             "index.html", banks=BANK_NAMES,
@@ -322,14 +329,11 @@ def verify():
             ),
         )
 
-    from zebebgna import history
-
     try:
         report.check_id = history.record(report)
     except Exception as exc:
-        # A DB failure must not turn a successful verification into a 500;
-        # the report is still shown, just without a stored history entry.
         app.logger.warning("Could not store check in history: %s", exc)
+
     context = _report_context(report)
     context.update(
         report=report,
@@ -413,6 +417,14 @@ def history_clear():
 
     history.clear()
     return redirect(url_for("history_page"))
+
+
+@app.after_request
+def set_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    return response
 
 
 if __name__ == "__main__":
