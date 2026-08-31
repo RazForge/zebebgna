@@ -5,7 +5,7 @@
   <p>Secure · Verified · Trusted</p>
 
   [![Python 3.8+](https://img.shields.io/badge/python-3.8+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-  [![License](https://img.shields.io/badge/License-RazForge%20Proprietary-orange.svg)](LICENSE)
+  [![License](https://img.shields.io/badge/License-RazForge%20Source--Available-orange.svg)](LICENSE)
   [![Tests](https://img.shields.io/badge/Tests-174%20passing-brightgreen.svg)]()
   [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-0f172a.svg)]()
   [![Banks](https://img.shields.io/badge/Banks-6%20supported-1d4ed8.svg)]()
@@ -255,41 +255,35 @@ Do **not** open a public issue for security vulnerabilities.
 
 ## License
 
-This software is proprietary and owned by [RazForge](https://github.com/RazForge).
+This project is licensed under the **RazForge Source-Available License**.
 
 ### You CAN
 
-- Install and use the Software for personal, non-commercial receipt verification
-- View and study the source code for learning purposes
-- Report bugs and suggest improvements
+- View, download, and study the source code
+- Use the Software for personal learning and education
+- Use the Software for non-commercial research and experimentation
+- Create private modifications for permitted purposes
+- Conduct authorized security research
 
 ### You CANNOT
 
-- Copy, distribute, or share the Software to third parties
-- Modify, adapt, or create derivative works
-- Sell, sublicense, or commercially distribute the Software
-- Reverse engineer, decompile, or disassemble the Software
-- Remove or alter any proprietary notices or branding
-- Use the Software to build a competing product or service
-- Bypass any security features or license verification
+- Commercially use, sell, or distribute the Software
+- Incorporate the Software into a commercial product or service
+- Publicly fork the repository without written permission
+- Sublicense or redistribute the Software
+- Use RazForge trademarks or imply official endorsement
+
+### Attribution Required
+
+Any permitted use must preserve attribution to the Copyright Holder, RazForge Lab, and RazForge organization.
 
 ### Commercial Use
 
-Any commercial use — including embedding in paid products, offering as a managed service, or using in consulting engagements — requires a separate written license agreement.
-
-**Request a commercial license:** [razforge@hotmail.com](mailto:razforge@hotmail.com)
-
-### Intellectual Property
-
-The Software and all associated intellectual property rights are and remain the exclusive property of RazForge. This license grants only a limited right of use as stated above.
-
-### Warranty Disclaimer
-
-THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. RazForge is not responsible for any decisions made based on the Software's output. The Software is a verification tool, not a substitute for professional judgment.
+Commercial use requires a separate written license. Contact: [razforge@hotmail.com](mailto:razforge@hotmail.com)
 
 ### Full License
 
-See [LICENSE](LICENSE) for the complete legal terms.
+See [LICENSE](LICENSE) for the complete 28-section license document.
 
 ---
 

@@ -7,7 +7,7 @@ name = "zebebgna"
 version = "0.2.0"
 description = "Defensive cybersecurity toolkit for verifying Ethiopian bank receipt authenticity and auditing receipt endpoint security"
 readme = "README.md"
-license = "Proprietary"
+license = "RazForge-Source-Available"
 requires-python = ">=3.8"
 dependencies = [
     "requests",

@@ -1,295 +1,544 @@
-RAZFORGE PROPRIETARY LICENSE
-Version 1.0 — August 2026
+# RAZFORGE SOURCE-AVAILABLE LICENSE
 
-Copyright (c) 2026 RazForge. All rights reserved.
-https://github.com/RazForge
-razforge@hotmail.com
+## Version 1.0 — 2026
 
-────────────────────────────────────────────────────────────────
+**Copyright © 2026 The respective copyright holder identified in the project. All rights reserved.**
 
-PREAMBLE
+**RazForge** is an independent technology organization supporting research, experimentation, engineering, cybersecurity, artificial intelligence, automation, and emerging technologies through a network of independent and collaborative **RazForge Labs**.
 
-This license governs the use of the Zebebgna receipt verification
-software and any associated documentation, source code, binaries,
-updates, and related materials (the "Software"). By installing,
-copying, or using the Software, you agree to be bound by the terms
-of this license. If you do not agree, do not use the Software.
+This License establishes the general terms under which software, research tools, artificial-intelligence models, datasets, documentation, and other technical works associated with RazForge may be accessed and used.
 
-────────────────────────────────────────────────────────────────
+---
 
-1. DEFINITIONS
+## 1. Definitions
 
-1.1  "Software" means the Zebebgna receipt verification toolkit,
-     including all source code, compiled binaries, templates, static
-     assets, documentation, configuration files, and associated
-     materials.
+For the purposes of this License:
 
-1.2  "Licensor" means RazForge, the entity that owns and distributes
-     the Software.
+**"RazForge"** means the umbrella technology organization and its associated projects, programs, laboratories, and initiatives.
 
-1.3  "Licensee" means any individual, organization, or entity that
-     downloads, installs, or uses the Software.
+**"RazForge Lab"** means an individual research, engineering, or development laboratory operating within or under the RazForge organization.
 
-1.4  "Commercial Use" means any use intended for or resulting in
-     monetary gain, including but not limited to: selling the Software
-     or services built on it, embedding it in a paid product, using it
-     as part of a consulting engagement, or offering it as a managed
-     service to third parties.
+Examples include:
 
-1.5  "Derivative Work" means any modified version, adaptation,
-     translation, or work based on or derived from the Software,
-     including but not limited to modifications to source code, adding
-     modules, or integrating the Software into another application.
+* Natahan — RazForge Lab
+* Henok — RazForge Lab
+* Future RazForge Labs established under the organization
 
-────────────────────────────────────────────────────────────────
+**"Copyright Holder"** means the individual, laboratory, organization, or other legal entity identified in the copyright notice accompanying the applicable Work.
 
-2. LICENSE GRANT
+**"Work"** means the software, source code, documentation, dataset, artificial-intelligence model, research artifact, tool, configuration, or other material distributed under this License.
 
-2.1  Subject to the terms of this License, Licensor grants Licensee
-     a non-exclusive, non-transferable, revocable, limited license
-     to install and use the Software solely for the Licensee's own
-     internal, personal, and non-commercial purposes.
+**"Derivative Work"** means a modified, adapted, extended, translated, integrated, or otherwise transformed version of the Work.
 
-2.2  This license permits:
-     a) Installing and running the Software on devices owned or
-        controlled by the Licensee;
-     b) Using the Software to verify Ethiopian bank receipts for the
-        Licensee's own needs;
-     c) Viewing and studying the source code for learning purposes
-        only.
+**"Commercial Use"** means any use primarily intended for commercial advantage, monetary compensation, revenue generation, resale, paid services, business operations, or commercial exploitation.
 
-────────────────────────────────────────────────────────────────
+**"Research Use"** means academic, scientific, educational, experimental, or other non-commercial research activity.
 
-3. RESTRICTIONS
+---
 
-The Licensee shall NOT, under any circumstances:
+# 2. Ownership
 
-3.1  COPY — Reproduce, duplicate, or distribute the Software or any
-     portion thereof to any third party, whether for free or for
-     payment.
+The Work remains the intellectual property of its respective Copyright Holder.
 
-3.2  MODIFY — Create Derivative Works, including but not limited to
-     modifying source code, adding features, translating, or
-     recompiling the Software.
+The identity of the Copyright Holder must be specified in the project's copyright notice.
 
-3.3  SELL — Sublicense, sell, lease, rent, or otherwise commercially
-     distribute the Software or any Derivative Work.
+For example:
 
-3.4  REVERSE ENGINEER — Decompile, disassemble, reverse compile, or
-     otherwise attempt to derive the source code of the Software,
-     except to the extent expressly permitted by applicable law.
+```text
+Copyright © 2026 Natahan — RazForge Lab
+```
 
-3.5  REMOVE NOTICES — Delete, alter, or obscure any proprietary
-     notices, labels, watermarks, copyright notices, or branding
-     included in or on the Software.
+or:
 
-3.6  COMPETE — Use the Software or any portion thereof to build a
-     competing product or service, or for benchmarking purposes
-     without prior written consent from Licensor.
+```text
+Copyright © 2026 Henok — RazForge Lab
+```
 
-3.7  TRANSFER — Assign, transfer, or share this license or any
-     rights under it to any third party without prior written consent
-     from Licensor.
+Being part of RazForge does not automatically transfer ownership of a Work from one Lab or creator to another.
 
-3.8  CIRCUMVENT — Bypass, disable, or interfere with any security
-     features, license verification mechanisms, or usage restrictions
-     embedded in the Software.
+Nothing in this License transfers ownership of the Work, intellectual property, trademarks, research, models, datasets, or other protected material.
 
-────────────────────────────────────────────────────────────────
+All rights not expressly granted by this License are reserved.
 
-4. COMMERCIAL USE
+---
 
-4.1  Any Commercial Use of the Software requires a separate written
-     license agreement from Licensor.
+# 3. Permission to Use
 
-4.2  To request a commercial license, contact:
-     razforge@hotmail.com
+Subject to the terms of this License, permission is granted to individuals and organizations to:
 
-4.3  Commercial license terms, including pricing, scope, and support,
-     will be negotiated separately and documented in a signed
-     agreement.
+* view the Work;
+* access the source code where provided;
+* download the Work;
+* study the Work;
+* use the Work for personal learning;
+* use the Work for educational purposes;
+* use the Work for non-commercial research;
+* evaluate and test the Work;
+* conduct authorized security research;
+* create private modifications for permitted purposes.
 
-4.4  Use of the Software without a valid commercial license for any
-     Commercial Use is strictly prohibited and constitutes a material
-     breach of this License.
+This permission is limited, non-exclusive, non-transferable, and subject to continued compliance with this License.
 
-────────────────────────────────────────────────────────────────
+---
 
-5. INTELLECTUAL PROPERTY
+# 4. Commercial Use
 
-5.1  The Software and all intellectual property rights therein,
-     including but not limited to patents, copyrights, trademarks,
-     trade secrets, and know-how, are and shall remain the exclusive
-     property of Licensor.
+**Commercial Use is NOT permitted under this License.**
 
-5.2  This License does not grant Licensee any ownership rights in or
-     to the Software. This License grants only a limited right of use
-     as expressly stated herein.
+Without prior written authorization from the applicable Copyright Holder, RazForge, or an authorized licensing representative, a recipient may not:
 
-5.3  All feedback, suggestions, bug reports, or ideas provided by
-     Licensee regarding the Software shall be deemed non-confidential
-     and may be used by Licensor without restriction.
+* sell the Work;
+* sell a modified or derivative version of the Work;
+* incorporate the Work into a commercial product or service;
+* provide the Work as part of a paid service;
+* commercially host or operate the Work;
+* use the Work to generate commercial revenue;
+* sublicense the Work for commercial purposes;
+* commercially distribute the Work or a Derivative Work;
+* use the Work as a commercial component of another product or platform.
 
-────────────────────────────────────────────────────────────────
+Commercial rights may be granted through a separate commercial license, partnership agreement, enterprise agreement, or other written authorization.
 
-6. UPDATES AND VERSIONS
+RazForge and/or the applicable Copyright Holder may establish separate commercial licensing terms.
 
-6.1  Licensor may, at its sole discretion, release updates, patches,
-     or new versions of the Software.
+---
 
-6.2  This License applies to all updates, patches, and new versions
-     of the Software released by Licensor.
+# 5. Personal, Educational, and Research Use
 
-6.3  Licensor is not obligated to provide updates, support, or
-     maintenance for the Software.
+The Work may be used without a commercial license for legitimate:
 
-────────────────────────────────────────────────────────────────
+* personal projects;
+* educational activities;
+* university coursework;
+* academic research;
+* thesis and dissertation research;
+* scientific research;
+* security research;
+* experimentation;
+* testing;
+* non-commercial demonstrations;
+* non-commercial proof-of-concepts.
 
-7. TERMINATION
+Users remain responsible for complying with applicable laws, regulations, institutional policies, and third-party rights.
 
-7.1  This License is effective from the date of installation and
-     remains in force until terminated.
+---
 
-7.2  Licensor may terminate this License immediately upon written
-     notice if Licensee breaches any term herein.
+# 6. Mandatory Attribution
 
-7.3  Upon termination:
-     a) All rights granted to Licensee under this License cease
-        immediately;
-     b) Licensee must destroy all copies of the Software in its
-        possession or control;
-     c) Licensee must cease all use of the Software.
+**Attribution is required.**
 
-7.4  Sections 5 (Intellectual Property), 8 (Disclaimer of
-     Warranties), 9 (Limitation of Liability), 10 (Indemnification),
-     and 11 (Governing Law) shall survive termination.
+Any permitted use of the Work must preserve appropriate attribution to:
 
-────────────────────────────────────────────────────────────────
+1. the applicable Copyright Holder;
+2. the relevant RazForge Lab, where applicable;
+3. RazForge as the associated organization.
 
-8. DISCLAIMER OF WARRANTIES
+Attribution must not be intentionally removed, hidden, or altered in a manner that misrepresents the origin of the Work.
 
-8.1  THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT
-     WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-     LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-     PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.
+Where technically and reasonably possible, users should provide a reference to the original project repository or official RazForge publication.
 
-8.2  LICENSOR DOES NOT WARRANT THAT THE SOFTWARE WILL BE
-     ERROR-FREE, UNINTERRUPTED, SECURE, OR FREE OF VIRUSES OR OTHER
-     HARMFUL COMPONENTS.
+A typical attribution may be:
 
-8.3  LICENSOR DOES NOT WARRANT THE ACCURACY, COMPLETENESS, OR
-     RELIABILITY OF ANY RESULTS OBTAINED THROUGH USE OF THE
-     SOFTWARE, INCLUDING BUT NOT LIMITED TO RECEIPT VERIFICATION
-     RESULTS.
+```text
+Based on [Project Name] by [Copyright Holder],
+a RazForge project developed by [RazForge Lab].
+```
 
-8.4  THE SOFTWARE IS A TOOL TO ASSIST WITH RECEIPT VERIFICATION.
-     IT IS NOT A SUBSTITUTE FOR INDEPENDENT VERIFICATION,
-     PROFESSIONAL ADVICE, OR JUDGMENT. LICENSOR IS NOT RESPONSIBLE
-     FOR ANY DECISIONS MADE BASED ON THE SOFTWARE'S OUTPUT.
+---
 
-────────────────────────────────────────────────────────────────
+# 7. Academic Citation
 
-9. LIMITATION OF LIABILITY
+When the Work is used in academic or scientific research, the user must appropriately acknowledge the relevant project and Copyright Holder.
 
-9.1  TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, LICENSOR
-     SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
-     CONSEQUENTIAL, PUNITIVE, OR EXEMPLARY DAMAGES, INCLUDING BUT
-     NOT LIMITED TO DAMAGES FOR LOSS OF PROFITS, DATA, BUSINESS
-     OPPORTUNITIES, GOODWILL, OR OTHER INTANGIBLE LOSSES, ARISING
-     OUT OF OR IN CONNECTION WITH THE USE OR INABILITY TO USE THE
-     SOFTWARE, EVEN IF LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY
-     OF SUCH DAMAGES.
+This includes:
 
-9.2  LICENSOR'S TOTAL CUMULATIVE LIABILITY UNDER THIS LICENSE SHALL
-     NOT EXCEED THE AMOUNT PAID BY THE LICENSEE TO LICENSOR FOR THE
-     SOFTWARE, OR ONE HUNDRED US DOLLARS (USD $100), WHICHEVER IS
-     GREATER.
+* research papers;
+* theses;
+* dissertations;
+* journal publications;
+* conference papers;
+* technical reports;
+* academic presentations;
+* academic demonstrations.
 
-9.3  THE LIMITATIONS IN THIS SECTION APPLY WHETHER THE CLAIM IS
-     BASED ON CONTRACT, TORT, NEGLIGENCE, STRICT LIABILITY, OR ANY
-     OTHER THEORY, EVEN IF LICENSOR HAS BEEN ADVISED OF THE
-     POSSIBILITY OF SUCH DAMAGES.
+If the project provides an official citation format, users should use that citation.
 
-────────────────────────────────────────────────────────────────
+---
 
-10. INDEMNIFICATION
+# 8. Modification
 
-10.1 Licensee agrees to indemnify, defend, and hold harmless
-     Licensor, its officers, directors, employees, and agents from
-     and against any and all claims, liabilities, damages, losses,
-     costs, and expenses (including reasonable attorneys' fees)
-     arising out of or in connection with:
-     a) Licensee's use of the Software;
-     b) Licensee's violation of this License;
-     c) Licensee's violation of any applicable law or regulation;
-     d) Any claim that the Software or Licensee's use thereof
-        infringes or misappropriates any third-party rights.
+Modification of the Work is permitted for purposes allowed under this License.
 
-────────────────────────────────────────────────────────────────
+Modified versions must:
 
-11. GOVERNING LAW AND DISPUTE RESOLUTION
+1. preserve the original copyright notices;
+2. preserve required attribution;
+3. clearly indicate that modifications have been made;
+4. maintain a reference to the original Work;
+5. comply with all restrictions of this License.
 
-11.1 This License shall be governed by and construed in accordance
-     with the laws of the State of Israel, without regard to its
-     conflict of law provisions.
+Modified versions must not falsely claim to be official RazForge releases.
 
-11.2 Any dispute arising out of or in connection with this License
-     shall be subject to the exclusive jurisdiction of the courts
-     located in Tel Aviv, Israel.
+---
 
-11.3 The United Nations Convention on Contracts for the International
-     Sale of Goods (CISG) does not apply to this License.
+# 9. Improvements and Contributions
 
-────────────────────────────────────────────────────────────────
+RazForge encourages responsible technical collaboration.
 
-12. GENERAL PROVISIONS
+Users who develop improvements, fixes, security enhancements, documentation, research extensions, or other substantial changes may submit them through an approved RazForge contribution process.
 
-12.1 ENTIRE AGREEMENT — This License constitutes the entire
-     agreement between the parties with respect to the subject matter
-     hereof and supersedes all prior or contemporaneous
-     communications, representations, or agreements, whether written
-     or oral.
+RazForge and the applicable Lab retain the right to accept or reject contributions.
 
-12.2 SEVERABILITY — If any provision of this License is held to be
-     invalid or unenforceable, the remaining provisions shall remain
-     in full force and effect.
+Acceptance of a contribution does not automatically transfer ownership of unrelated intellectual property belonging to the contributor.
 
-12.3 WAIVER — No failure or delay by Licensor in exercising any
-     right under this License shall constitute a waiver of that
-     right.
+Where a contribution is accepted, the contributor grants the applicable project and its maintainers the rights necessary to use, reproduce, modify, maintain, distribute, and incorporate that contribution into the project, unless a separate written agreement provides otherwise.
 
-12.4 ASSIGNMENT — Licensee may not assign or transfer this License
-     or any rights or obligations hereunder without the prior written
-     consent of Licensor.
+RazForge may require contributors to agree to a separate Contributor License Agreement or equivalent terms.
 
-12.5 NOTICES — Any notice required or permitted under this License
-     shall be in writing and shall be delivered to:
-     razforge@hotmail.com
+---
 
-────────────────────────────────────────────────────────────────
+# 10. Public Forks and Redistribution
 
-13. EXPORT COMPLIANCE
+Public forks are **not automatically authorized** by this License.
 
-13.1 Licensee agrees to comply with all applicable export and re-
-     export control laws and regulations, including but not limited
-     to the export administration regulations of the country in which
-     the Licensee resides or in which the Software is used.
+A recipient may create private copies and private modifications for purposes permitted by this License.
 
-────────────────────────────────────────────────────────────────
+Creating, publishing, maintaining, or distributing a public fork requires prior written permission from the applicable Copyright Holder or RazForge.
 
-14. CONTACT
+Permission may be granted on a case-by-case basis and may include additional conditions.
 
-For questions about this License:
+Redistribution of the Work is otherwise prohibited unless expressly permitted by the applicable project terms or written authorization.
 
-  RazForge
-  https://github.com/RazForge
-  razforge@hotmail.com
+---
 
-For commercial licensing inquiries:
+# 11. Artificial Intelligence and Machine Learning
 
-  razforge@hotmail.com
-  Subject: "Zebebgna Commercial License Request"
+Where the Work contains artificial-intelligence or machine-learning systems, models, model weights, training components, inference systems, or related artifacts, the same non-commercial principles apply unless a project-specific license states otherwise.
 
-────────────────────────────────────────────────────────────────
+Permitted users may:
 
-END OF LICENSE
+* run the model;
+* study the model;
+* evaluate the model;
+* conduct non-commercial research;
+* perform academic experiments;
+* fine-tune or adapt the model for permitted non-commercial purposes.
+
+Without authorization, users may not:
+
+* sell the model;
+* commercially deploy the model;
+* sell model weights;
+* commercially distribute modified model weights;
+* provide the model as part of a paid service;
+* falsely represent a modified model as an official RazForge model.
+
+Use of a RazForge model does not transfer ownership of the original model or associated intellectual property.
+
+Individual AI projects may include additional model-specific terms.
+
+---
+
+# 12. Datasets
+
+RazForge datasets may be made available for research, educational, scientific, and experimental purposes.
+
+Unless a dataset-specific license states otherwise, RazForge datasets may be used for legitimate **non-commercial research and academic purposes only**.
+
+Users may not, without written authorization:
+
+* sell a RazForge dataset;
+* commercially redistribute a dataset;
+* use a dataset as a commercial data product;
+* use a dataset to provide commercial services;
+* claim ownership of the original dataset;
+* commercially exploit the dataset;
+* redistribute the dataset beyond the permissions granted by its applicable terms.
+
+Researchers using RazForge datasets must provide appropriate attribution and citation.
+
+Datasets may contain third-party material and may therefore be subject to additional restrictions.
+
+---
+
+# 13. Cybersecurity Use
+
+RazForge may develop and publish tools for:
+
+* defensive security;
+* offensive security research;
+* penetration testing;
+* vulnerability research;
+* threat detection;
+* security monitoring;
+* incident response;
+* security automation;
+* malware analysis;
+* digital forensics;
+* security education;
+* authorized security testing.
+
+Use of cybersecurity tools must be conducted only with appropriate authorization.
+
+This License does not authorize:
+
+* unauthorized access;
+* unlawful system compromise;
+* theft of information;
+* deployment of malware for unlawful purposes;
+* unauthorized surveillance;
+* disruption of services;
+* attacks against systems without permission;
+* violation of applicable cybersecurity or computer-crime laws.
+
+The user is solely responsible for obtaining the necessary authorization before conducting security activities.
+
+---
+
+# 14. RazForge Name, Logos, and Trademarks
+
+This License does not grant permission to use RazForge trademarks, logos, names, or branding to imply:
+
+* official endorsement;
+* sponsorship;
+* partnership;
+* employment;
+* certification;
+* ownership;
+* official affiliation.
+
+Users may accurately state that they use, study, evaluate, or build upon a RazForge project, provided that such statements do not imply official endorsement.
+
+Permission to create a public project using the RazForge name or branding may require separate authorization.
+
+---
+
+# 15. Patent Rights
+
+To the extent permitted by applicable law, the applicable Copyright Holder grants recipients of the original Work a non-exclusive patent license to patent claims necessarily infringed by the original Work, solely for uses permitted by this License.
+
+This patent grant does not extend to:
+
+* separate inventions;
+* modified implementations introducing additional patent claims;
+* combinations of the Work with unrelated technologies;
+* commercial activities prohibited by this License.
+
+If a recipient initiates patent litigation alleging that the Work or its permitted use infringes a patent, the patent rights granted under this section may terminate to the extent permitted by applicable law.
+
+---
+
+# 16. No Warranty
+
+THE WORK IS PROVIDED **"AS IS"**, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER, RAZFORGE, AND ITS ASSOCIATED LABS DISCLAIM ALL WARRANTIES, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, ACCURACY, RELIABILITY, SECURITY, AVAILABILITY, AND PERFORMANCE.
+
+The user assumes responsibility for evaluating the Work before use.
+
+---
+
+# 17. Security and Operational Risk
+
+RazForge projects may include experimental cybersecurity, artificial-intelligence, automation, or other emerging technologies.
+
+RazForge does not guarantee that a Work will:
+
+* detect every security threat;
+* prevent every attack;
+* produce accurate results;
+* operate without vulnerabilities;
+* operate continuously;
+* be suitable for production deployment;
+* produce reliable or deterministic results.
+
+Users are responsible for testing, validation, monitoring, and appropriate risk management.
+
+---
+
+# 18. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE COPYRIGHT HOLDER, RAZFORGE, AND ITS ASSOCIATED LABS SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR OTHER DAMAGES ARISING FROM OR RELATED TO THE USE OR INABILITY TO USE THE WORK.
+
+THIS INCLUDES, WITHOUT LIMITATION:
+
+* loss of data;
+* loss of profits;
+* business interruption;
+* security incidents;
+* system damage;
+* loss of access;
+* operational failures;
+* other losses resulting from use of the Work.
+
+---
+
+# 19. Termination
+
+The rights granted under this License automatically terminate if a recipient materially violates its terms.
+
+Upon termination, the recipient must cease activities that are no longer authorized under this License.
+
+Termination does not affect rights that cannot legally be terminated.
+
+RazForge and/or the applicable Copyright Holder reserve the right to pursue available legal remedies for violations of this License.
+
+---
+
+# 20. No Transfer of Ownership
+
+Downloading, accessing, studying, modifying, or using the Work does not transfer ownership of:
+
+* source code;
+* software;
+* research;
+* datasets;
+* AI models;
+* documentation;
+* trademarks;
+* patents;
+* other intellectual property.
+
+All rights not expressly granted remain reserved.
+
+---
+
+# 21. Commercial Licensing
+
+RazForge and/or the applicable Copyright Holder may provide separate commercial licenses.
+
+A commercial license may grant rights that are not available under this License, including:
+
+* commercial deployment;
+* commercial redistribution;
+* enterprise use;
+* integration into commercial products;
+* commercial hosting;
+* public redistribution;
+* additional support;
+* additional permissions.
+
+Commercial licensing terms may vary between projects and RazForge Labs.
+
+---
+
+# 22. Project-Specific Licensing
+
+RazForge is an umbrella organization containing multiple Labs and projects.
+
+Individual projects may contain additional or different licensing terms.
+
+Where a project-specific license expressly supersedes or supplements this License, those project-specific terms shall apply to that project.
+
+Third-party software, datasets, models, libraries, and other dependencies remain subject to their respective licenses.
+
+---
+
+# 23. Lab Independence and Ownership
+
+RazForge may contain multiple Labs operated by different individuals or teams.
+
+Each Lab may develop and maintain its own projects, research, software, models, datasets, and technical artifacts.
+
+The ownership of each Work is determined by the copyright and ownership notice provided with that Work.
+
+Examples include:
+
+```text
+Copyright © 2026 Natahan — RazForge Lab
+```
+
+```text
+Copyright © 2026 Henok — RazForge Lab
+```
+
+The use of the RazForge name does not by itself transfer ownership of a Work between Labs.
+
+Where a separate written agreement establishes different ownership arrangements, that agreement controls.
+
+---
+
+# 24. Compliance With Law
+
+Users must comply with all applicable laws, regulations, contractual obligations, institutional policies, and third-party rights.
+
+Nothing in this License grants permission to violate applicable law.
+
+This is particularly important for cybersecurity tools, datasets, artificial-intelligence systems, privacy-sensitive technologies, and research involving third-party infrastructure or information.
+
+---
+
+# 25. Reserved Rights
+
+Except for the limited permissions expressly granted by this License, all rights are reserved.
+
+In particular, this License does not automatically grant the right to:
+
+* commercially use the Work;
+* commercially distribute the Work;
+* publicly fork the Work;
+* sublicense the Work;
+* sell the Work;
+* commercially exploit datasets;
+* commercially distribute AI models;
+* use RazForge trademarks;
+* represent a derivative work as an official RazForge product.
+
+---
+
+# 26. Licensing Requests
+
+Requests for:
+
+* commercial licensing;
+* public-fork permission;
+* redistribution permission;
+* trademark usage;
+* partnerships;
+* enterprise deployment;
+* special research permissions;
+* other exceptions
+
+should be submitted through the official RazForge contact or the contact specified by the applicable project.
+
+RazForge and/or the applicable Copyright Holder may approve or reject requests at their discretion.
+
+---
+
+# 27. Philosophy
+
+RazForge exists around a simple principle:
+
+> **Discover what is hidden.
+> Build what is missing.
+> Break what is weak.
+> Defend what matters.**
+
+We believe the best way to understand technology is to build it, test it, challenge it, and continuously improve it.
+
+RazForge supports responsible experimentation, technical research, practical engineering, security, collaboration, and knowledge sharing while protecting the intellectual property and long-term sustainability of the people and Labs that build within the organization.
+
+---
+
+# 28. Final Notice
+
+This License is a **source-available license** and is **not intended to grant unrestricted open-source rights**.
+
+Unless explicitly authorized otherwise:
+
+**Research is welcome.
+Learning is welcome.
+Experimentation is welcome.
+Commercial exploitation is not.**
+
+**Build responsibly.
+Research responsibly.
+Use responsibly.**
+
+---
+
+**RazForge — Build. Break. Defend.**
+
+**Copyright © 2026 — Respective Copyright Holder**
+
+All rights reserved.
