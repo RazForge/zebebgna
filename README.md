@@ -283,7 +283,7 @@ Commercial use requires a separate written license. Contact: [razforge@hotmail.c
 
 ### Full License
 
-See [LICENSE](LICENSE) for the complete 28-section license document.
+See [LICENSE.md](LICENSE.md) for the complete 28-section license document.
 
 ---
 
