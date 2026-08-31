@@ -1,64 +1,132 @@
 <div align="center">
-  <img src="logo.png" alt="Zebebgna Logo" width="200"/>
-  <h1>Zebebgna</h1>
-  <p><strong>"guard"</strong> · Defensive verification of Ethiopian bank receipts</p>
+  <img src="zebebgna-logo.png" alt="Zebebgna Logo" width="220"/>
+  <h1>ZEBEGNA</h1>
+  <p><strong>🇿🇪 Guard — Defensive Verification of Ethiopian Bank Receipts</strong></p>
+  <p>Secure · Verified · Trusted</p>
 
-  [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-  [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-0f172a)]()
-  [![Banks](https://img.shields.io/badge/Banks-6%20supported-1d4ed8)]()
+  [![Python 3.8+](https://img.shields.io/badge/python-3.8+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-  [![Tests](https://img.shields.io/badge/Tests-174%20passing-brightgreen)]()
+  [![Tests](https://img.shields.io/badge/Tests-174%20passing-brightgreen.svg)]()
+  [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-0f172a.svg)]()
+  [![Banks](https://img.shields.io/badge/Banks-6%20supported-1d4ed8.svg)]()
+  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 </div>
 
 ---
 
-## What is this?
+## What is Zebebgna?
 
-A receipt is only as trustworthy as its source. **Zebebgna** is a cybersecurity toolkit that keeps fake and tampered Ethiopian bank receipts out of your hands. It extracts receipt data from **six major banks** — CBE, Dashen, Awash, BOA, Zemen, and Telebirr — then puts that data on trial:
+**Zebebgna** (Amharic: ዘበኛ — "guard") is a cybersecurity toolkit that verifies the authenticity of Ethiopian bank receipts. It extracts receipt data from **six major banks**, then puts that data on trial through a multi-layered verification pipeline.
 
-- Checks the serving website's **security posture**
-- Flags **phishing lookalikes** and typosquatting domains
-- **Reconciles amounts** (transferred + fees = total)
-- Validates every **reference number**
-- Fuses all signals into a clear **0–100 risk score**
+In 2025, Ethiopian bank fraud via fake receipts surged. Scammers create pixel-perfect copies of bank receipts or host them on phishing domains that look like `apps.cbe.com.et`. Victims lose millions of Birr trusting receipts that were never real.
 
-**Result:** a color-coded verdict — **Good**, **Needs review**, or **Problem found**.
+**Zebebgna catches what visual inspection misses.**
 
 ---
 
-## Why does this matter?
+## How it works
 
-> **In 2025, Ethiopian bank fraud via fake receipts surged.** Scammers create pixel-perfect copies of bank receipts or host them on phishing domains that look like `apps.cbe.com.et`. Victims lose millions of Birr trusting receipts that were never real.
-
-Zebebgna catches what visual inspection misses:
-
-| Check | What it catches |
-|-------|----------------|
-| **Phishing domain detection** | Typosquatting, punycode IDN attacks, suspicious TLDs (.xyz, .top, .tk) |
-| **TLS certificate audit** | Expired certs, weak protocols (TLS 1.0/1.1), hostname mismatches |
-| **Amount reconciliation** | Math that doesn't add up (transferred + commission + VAT ≠ total) |
-| **Reference format validation** | Fake transaction IDs that don't match bank patterns |
-| **Community threat database** | Domains reported by other users as phishing |
-| **Threat fusion engine** | Correlates weak signals into attack scenarios with risk scoring |
+```
+Receipt Input (URL / PDF / Screenshot / Text)
+         │
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│                   EXTRACTION LAYER                       │
+│  CBE · Dashen · Awash · BOA · Zemen · Telebirr           │
+│  PDF regex · HTML scraping · Headless Chrome · OCR        │
+└─────────────────────────┬───────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│                   VERIFICATION LAYER                     │
+│  Phishing detection · TLS audit · Amount reconciliation  │
+│  Reference validation · Security headers · DNS checks    │
+└─────────────────────────┬───────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│                    FUSION ENGINE                         │
+│  Correlates weak signals into attack scenarios           │
+│  Produces a deterministic 0–100 risk score               │
+└─────────────────────────┬───────────────────────────────┘
+                          │
+                          ▼
+                 ┌─────────────────┐
+                 │   VERDICT       │
+                 │  ✅ Good        │
+                 │  ⚠️  Needs Review│
+                 │  ❌ Problem     │
+                 └─────────────────┘
+```
 
 ---
 
-## Quick start
+## Features
+
+### Extraction
+
+- **6 banks supported** — CBE, Dashen, Awash, Bank of Abyssinia, Zemen, Telebirr
+- **Multiple input formats** — URLs, PDFs, images (OCR), QR codes, pasted text
+- **Amount-in-words parsing** — English and Amharic number words, cross-referenced against digits
+- **Ethiopian calendar support** — Ge'ez numeral parsing, EC/GC date conversion
+
+### Verification
+
+- **Phishing domain detection** — Typosquatting, punycode IDN attacks, suspicious TLDs (.xyz, .top, .tk), URL shorteners
+- **TLS certificate audit** — Chain validation, SAN check, expiry, protocol version enforcement (TLS 1.2+)
+- **Security headers audit** — HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- **Amount reconciliation** — transferred + commission + VAT = total debited
+- **Reference format validation** — Fake transaction IDs that don't match bank patterns
+- **Community threat database** — Domains reported by other users as phishing
+
+### Intelligence
+
+- **Threat fusion engine** — Deterministic rule-based correlation of weak signals into attack scenarios with risk scoring
+- **LLM review** — Optional OpenAI-compatible AI verdict layer (Ollama, DeepSeek, etc.)
+- **Telegram bot** — `/verify` commands, photo/PDF upload support
+- **Web UI** — Flask-based interface for non-technical users
+
+### Security
+
+- **No `verify_ssl=False`** — ever. All network goes through `SecureFetcher` with strict TLS
+- **SSRF protection** — Private/internal IPs blocked, DNS rebinding mitigation, per-redirect validation
+- **CSRF protection** — All POST routes require tokens
+- **Rate limiting** — 30 requests/minute/IP on the web UI
+- **File size limits** — 10 MB max for uploads
+- **Fail-safe design** — LLM failures, OCR unavailability, and network errors never crash the pipeline
+
+---
+
+## Getting Started
+
+### Installation
 
 ```bash
-# Install
+git clone https://github.com/RazForge/zebebgna.git
+cd zebebgna
 pip install -e .
+```
 
-# Verify a receipt (Python)
+### Verify a receipt
+
+```python
 from zebebgna import verify_receipt
+
 report = verify_receipt("cbe", "https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223")
 print(report.score, report.status)  # e.g. 74 REVIEW
+```
 
-# Verify via CLI
+### CLI
+
+```bash
 zebebgna verify cbe "https://apps.cbe.com.et:100/?id=FT25211G11JQ21827223"
 zebebgna verify tele CHQ0FJ403O
+```
 
-# Web UI (for non-technical users)
+### Web UI
+
+```bash
 pip install -e ".[web]"
 python webapp.py
 # Open http://127.0.0.1:5000
@@ -66,27 +134,10 @@ python webapp.py
 
 ---
 
-## Features
+## Supported Banks
 
-- **Strict TLS everywhere** — plain-HTTP URLs are refused; every fetch verifies the full certificate chain
-- **Phishing detection** — raw IPs, lookalike domains, punycode IDN, URL shorteners, suspicious TLDs
-- **TLS certificate audit** — chain validation, SAN check, expiry, protocol version enforcement
-- **Security headers audit** — HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
-- **Authenticity verification** — amount cross-checks, reference format validation, status checks
-- **Amount-in-words parsing** — English and Amharic number words, cross-referenced against digits
-- **Ethiopian calendar support** — Ge'ez numeral parsing, EC/GC date conversion
-- **Threat fusion engine** — deterministic rule-based correlation of weak signals into attack scenarios
-- **Community phishing database** — user-reported domains raise error-level correlations
-- **OCR/PDF extraction** — Tesseract for images, pdfplumber for PDFs, QR code decoding
-- **Telegram bot** — `/verify` commands, photo/PDF upload support
-- **LLM review** — optional OpenAI-compatible AI verdict layer (Ollama, DeepSeek, etc.)
-
----
-
-## Supported banks
-
-| Bank | Extraction method | Amount math verified |
-|------|-------------------|---------------------|
+| Bank | Extraction | Amount Math |
+|------|-----------|-------------|
 | **CBE** (Commercial Bank of Ethiopia) | PDF regex | transferred + commission + VAT = total debited |
 | **Dashen Bank** | PDF regex | amount + service charge + VAT = total |
 | **Awash Bank** | HTML table scraping | Amount + Charge + VAT = Total |
@@ -96,16 +147,77 @@ python webapp.py
 
 ---
 
-## Security hardening
+## Architecture
 
-Zebebgna practices what it preaches:
+```
+zebebgna/
+├── __init__.py              # Public API: verify_receipt, audit_receipt_url
+├── fetch.py                 # SecureFetcher: HTTPS-only, SSRF protection
+├── fusion.py                # Threat-fusion engine: 0-100 risk score
+├── history.py               # SQLite persistence, community threat database
+├── vision.py                # OCR (Tesseract), PDF extraction, QR decoding
+├── words.py                 # English/Amharic number word parsing
+├── dates.py                 # Ethiopian calendar (EC/GC) conversion
+├── llm.py                   # Optional LLM verdict layer
+├── bot.py                   # Telegram bot interface
+├── cli.py                   # Command-line interface
+├── report.py                # VerificationReport data model
+├── extractors/
+│   ├── cbe.py               # CBE PDF extraction
+│   ├── dashen.py            # Dashen Bank PDF extraction
+│   ├── awash.py             # Awash Bank HTML table extraction
+│   ├── boa.py               # BOA headless Chrome extraction
+│   ├── zemen.py             # Zemen Bank PDF extraction
+│   └── tele.py              # Telebirr HTML extraction
+├── verifiers/
+│   ├── phishing.py          # URL phishing heuristics
+│   ├── tls.py               # TLS certificate audit
+│   ├── headers.py           # HTTP security headers audit
+│   ├── integrity.py         # Amount math, reference format validation
+│   └── fingerprint.py       # Per-bank layout fingerprinting
+├── templates/               # Flask HTML templates
+└── static/                  # Static assets (logo, CSS)
+webapp.py                    # Flask web UI entry point
+```
 
-- **No `verify_ssl=False`** — ever. All network goes through `SecureFetcher` with strict TLS
-- **SSRF protection** — private/internal IPs blocked, DNS rebinding mitigation, per-redirect validation
-- **CSRF protection** — all POST routes require tokens
-- **Rate limiting** — 30 requests/minute/IP on the web UI
-- **File size limits** — 10 MB max for uploads
-- **Fail-safe design** — LLM failures, OCR unavailability, and network errors never crash the pipeline
+---
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **Language** | Python 3.8+ |
+| **Network** | requests, urllib3 (strict TLS) |
+| **PDF parsing** | pdfplumber |
+| **OCR** | Tesseract (pytesseract) |
+| **Browser automation** | Selenium (headless Chrome) |
+| **Web UI** | Flask |
+| **Bot** | python-telegram-bot |
+| **Database** | SQLite |
+| **LLM** | OpenAI-compatible API (Ollama, DeepSeek, etc.) |
+| **Testing** | pytest |
+
+---
+
+## Testing
+
+```bash
+pip install pytest
+pytest tests/ -q        # 174 tests, all pass
+```
+
+Tests use mocked network (no live receipt endpoints). Coverage includes:
+
+- SSRF protection and redirect validation
+- Phishing domain detection
+- TLS certificate handling
+- Amount reconciliation for all 6 banks
+- Amharic/English word parsing
+- Ethiopian calendar conversion
+- CLI commands
+- Web UI routes
+- Telegram bot parsing
+- Threat fusion engine
 
 ---
 
@@ -123,70 +235,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions.
 
 ---
 
-## Questions? Ideas? Found a bug?
+## Security
 
-**Open an issue!** We'd love to hear from you:
+If you discover a security vulnerability, please report it responsibly:
 
-- [Bug report](https://github.com/RazForge/zebebgna/issues/new?template=bug_report.md)
-- [Feature request](https://github.com/RazForge/zebebgna/issues/new?template=feature_request.md)
 - [Security vulnerability](https://github.com/RazForge/zebebgna/security/advisories/new)
-- [General discussion](https://github.com/RazForge/zebebgna/discussions)
 
----
-
-## Architecture
-
-```
-zebebgna/
-  __init__.py          # Public API: verify_receipt, audit_receipt_url
-  fetch.py             # SecureFetcher: HTTPS-only, SSRF protection, TLS verification
-  fusion.py            # Threat-fusion engine: 0-100 risk score, correlation rules
-  history.py           # SQLite persistence, community threat database, feedback loop
-  vision.py            # OCR (Tesseract), PDF extraction, QR decoding
-  words.py             # English/Amharic number word parsing
-  dates.py             # Ethiopian calendar (EC/GC) conversion, Ge'ez numerals
-  llm.py               # Optional LLM verdict layer (Ollama, DeepSeek, OpenAI)
-  bot.py               # Telegram bot interface
-  cli.py               # Command-line interface
-  report.py            # VerificationReport data model, scoring
-  extractors/          # Per-bank receipt data extraction
-    cbe.py             # CBE PDF extraction
-    dashen.py          # Dashen Bank PDF extraction
-    awash.py           # Awash Bank HTML table extraction
-    boa.py             # BOA headless Chrome extraction
-    zemen.py           # Zemen Bank PDF extraction
-    tele.py            # Telebirr HTML extraction
-  verifiers/           # Security and authenticity checks
-    phishing.py        # URL phishing heuristics
-    tls.py             # TLS certificate audit
-    headers.py         # HTTP security headers audit
-    integrity.py       # Amount math, reference format, status checks
-    fingerprint.py     # Per-bank layout fingerprinting
-  templates/           # Flask HTML templates
-  static/              # Static assets (logo, CSS)
-webapp.py              # Flask web UI entry point
-```
-
----
-
-## Testing
-
-```bash
-pip install pytest
-pytest tests/ -q        # 174 tests, all pass
-```
-
-Tests use mocked network (no live receipt endpoints). Coverage includes:
-- SSRF protection and redirect validation
-- Phishing domain detection
-- TLS certificate handling
-- Amount reconciliation for all 6 banks
-- Amharic/English word parsing
-- Ethiopian calendar conversion
-- CLI commands
-- Web UI routes
-- Telegram bot parsing
-- Threat fusion engine
+Do **not** open a public issue for security vulnerabilities.
 
 ---
 
@@ -197,10 +252,16 @@ MIT License. See [LICENSE](LICENSE).
 ---
 
 <div align="center">
-  <p>Built with care for the Ethiopian financial security community.</p>
+  <p><strong>Built with care for the Ethiopian financial security community.</strong></p>
   <p>
     <a href="https://github.com/RazForge/zebebgna/issues">Report a bug</a> ·
     <a href="https://github.com/RazForge/zebebgna/discussions">Start a discussion</a> ·
     <a href="https://github.com/RazForge/zebebgna/pulls">Submit a PR</a>
+  </p>
+  <br>
+  <p>
+    <a href="https://github.com/RazForge">
+      <img src="https://img.shields.io/badge/Part%20of-RazForge-blue?style=for-the-badge&logo=github" alt="Part of RazForge"/>
+    </a>
   </p>
 </div>
