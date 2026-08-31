@@ -149,7 +149,6 @@ def _build_payload(report):
         ],
         "temperature": 0.2,
         "response_format": {"type": "json_object"},
-        "timeout": 60,
     }
 
 
@@ -197,7 +196,7 @@ def _parse_response(text):
         return None
     confidence = payload.get("confidence")
     try:
-        confidence = int(confidence)
+        confidence = max(0, min(100, int(confidence)))
     except (TypeError, ValueError):
         confidence = None
     return AIVerdict(
@@ -221,15 +220,7 @@ def review_report(report, timeout=60):
         response = requests.post(
             _endpoint(),
             headers=_headers(),
-            json={
-                "model": model_name(),
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": _describe(report)},
-                ],
-                "temperature": 0.2,
-                "response_format": {"type": "json_object"},
-            },
+            json=_build_payload(report),
             timeout=timeout,
         )
         if response.status_code != 200:
