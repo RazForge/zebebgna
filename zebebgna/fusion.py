@@ -280,9 +280,12 @@ RULES = [
         "Raw IP, URL shortener, punycode, or a non-standard port hides the "
         "true destination of the receipt link.",
         lambda s: (
-            ["ip", "shortener", "punycode", "port"]
-            if s.is_ip or s.is_shortener or s.is_punycode
-            or (s.port and s.port != 443) else []
+            [sig for sig, cond in [
+                ("ip", s.is_ip),
+                ("shortener", s.is_shortener),
+                ("punycode", s.is_punycode),
+                ("port", s.port and s.port != 443),
+            ] if cond] or []
         ),
     ),
     (
