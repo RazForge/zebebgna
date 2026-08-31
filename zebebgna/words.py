@@ -38,10 +38,10 @@ _NUMBER_TOKEN_RE = re.compile(r"[a-z\u1200-\u137f'-]+", re.IGNORECASE)
 
 
 def _word_value(token):
-    return (
-        ONES_EN.get(token) or ONES_AM.get(token)
-        or TENS_EN.get(token) or TENS_AM.get(token)
-    )
+    for d in (ONES_EN, ONES_AM, TENS_EN, TENS_AM):
+        if token in d:
+            return d[token]
+    return None
 
 
 def _parse_number(tokens):
