@@ -2,7 +2,7 @@
 
 ## Version 1.0 — 2026
 
-**Copyright © 2026 Ha'araphel — RazForge Lab. All rights reserved.**
+**Copyright © 2026 Ha'araphel — RazForge. All rights reserved.**
 
 **RazForge** is an independent technology organization supporting research, experimentation, engineering, cybersecurity, artificial intelligence, automation, and emerging technologies through a network of independent and collaborative **RazForge Labs**.
 
@@ -539,6 +539,6 @@ Use responsibly.**
 
 **RazForge — Build. Break. Defend.**
 
-**Copyright © 2026 — Ha'araphel — RazForge Lab**
+**Copyright © 2026 — Ha'araphel — RazForge**
 
 All rights reserved.
