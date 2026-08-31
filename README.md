@@ -5,7 +5,7 @@
   <p>Secure · Verified · Trusted</p>
 
   [![Python 3.8+](https://img.shields.io/badge/python-3.8+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+  [![License](https://img.shields.io/badge/License-RazForge%20Proprietary-orange.svg)](LICENSE)
   [![Tests](https://img.shields.io/badge/Tests-174%20passing-brightgreen.svg)]()
   [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-0f172a.svg)]()
   [![Banks](https://img.shields.io/badge/Banks-6%20supported-1d4ed8.svg)]()
@@ -100,7 +100,15 @@ Receipt Input (URL / PDF / Screenshot / Text)
 
 ## Getting Started
 
-### Installation
+### Quick Start (Windows)
+
+1. **Install Python** — Download from [python.org](https://www.python.org/downloads/) (check "Add Python to PATH")
+2. **Double-click `start.bat`** — It installs everything and opens the app in your browser
+3. **Verify a receipt** — Paste a receipt URL or upload a PDF
+
+That's it. No command line needed.
+
+### Manual Installation
 
 ```bash
 git clone https://github.com/RazForge/zebebgna.git
@@ -247,7 +255,9 @@ Do **not** open a public issue for security vulnerabilities.
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+Proprietary — RazForge. See [LICENSE](LICENSE).
+
+For commercial use or inquiries, contact [razforge@hotmail.com](mailto:razforge@hotmail.com).
 
 ---
 

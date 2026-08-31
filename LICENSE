@@ -1,0 +1,70 @@
+RAZFORGE PROPRIETARY LICENSE
+Version 1.0 — August 2026
+
+Copyright (c) 2026 RazForge. All rights reserved.
+
+1. DEFINITIONS
+
+"Software" means the Zebebgna receipt verification toolkit, including
+all source code, binaries, documentation, and associated files.
+
+"Licensor" means RazForge, the entity granting this license.
+
+"Licensee" means any individual or entity that uses the Software.
+
+2. LICENSE GRANT
+
+Subject to the terms of this License, Licensor grants Licensee a
+non-exclusive, non-transferable, revocable license to use the Software
+for internal and personal purposes only.
+
+3. RESTRICTIONS
+
+Licensee shall NOT:
+
+  a) Copy, modify, or distribute the Software or any derivative works;
+  b) Reverse engineer, decompile, or disassemble the Software;
+  c) Sublicense, sell, or otherwise transfer the Software to any third party;
+  d) Use the Software for commercial, competitive, or benchmarking purposes
+     without prior written consent from Licensor;
+  e) Remove or alter any proprietary notices, labels, or marks on the Software;
+  f) Use the Software in any manner that violates applicable law.
+
+4. INTELLECTUAL PROPERTY
+
+The Software and all intellectual property rights therein are and shall
+remain the exclusive property of Licensor. This License does not grant
+Licensee any ownership rights in or to the Software.
+
+5. TERMINATION
+
+This License is effective until terminated. Licensor may terminate this
+License at any time if Licensee fails to comply with any term herein.
+Upon termination, Licensee must destroy all copies of the Software.
+
+6. DISCLAIMER OF WARRANTIES
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. LICENSOR DOES NOT
+WARRANT THAT THE SOFTWARE WILL BE ERROR-FREE OR UNINTERRUPTED.
+
+7. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING OUT OF OR RELATED
+TO THE USE OF THE SOFTWARE, EVEN IF LICENSOR HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+
+8. GOVERNING LAW
+
+This License shall be governed by and construed in accordance with the
+laws of Israel, without regard to its conflict of law provisions.
+
+9. CONTACT
+
+For questions about this License or to request commercial use permission:
+
+  RazForge
+  https://github.com/RazForge
+  razforge@hotmail.com
