@@ -8,8 +8,7 @@ file first to recall the full context before doing any work on it.
 - **Meaning:** Amharic for "guard"
 - **Purpose:** Defensive cybersecurity toolkit that verifies the authenticity of
   Ethiopian bank receipts and audits the security posture of the endpoints that serve them.
-- **Repo:** https://github.com/natahanjr/zebebgna (public, main branch)
-- **Location on disk:** `F:\My Project\zebebgna`
+- **Repo:** https://github.com/RazForge/zebebgna (public, main branch)
 
 ## What it does
 - Extracts receipt data from 6 Ethiopian banks/mobile money: CBE, Dashen, Awash,
@@ -70,12 +69,10 @@ file first to recall the full context before doing any work on it.
 
 ## How to install / test
 ```
-cd F:\My Project\zebebgna
-py -m pip install -e ".[web]"     # core + Flask web UI
-py -m pytest tests/ -q            # 174 tests, all pass
-py webapp.py                      # start web UI
+pip install -e ".[web]"     # core + Flask web UI
+pytest tests/ -q            # 174 tests, all pass
+python webapp.py            # start web UI
 ```
-Note: on this machine `python` is not on PATH — use `py` (Python 3.14.4).
 Deps: requests, pdfplumber, beautifulsoup4, selenium (+ flask for web,
 python-telegram-bot for the bot). BOA extractor needs ChromeDriver (selenium).
 CI lint gate (GitHub Actions): `flake8 . --select=E9,F63,F7,F82` (fatal
@@ -97,14 +94,5 @@ errors only; long lines E501 are NOT enforced).
 7. PDF docs generated with Edge headless; keep `docs/Zebebgna-Documentation.html`
    as the editable source.
 
-## Environment specifics
-- Windows (PowerShell 5.1); git 2.55; gh CLI 2.97 installed and authed as `natahanjr`
-  (git identity: user.name "Haaraphel", noreply email 261567925+natahanjr@users.noreply.github.com)
-- GitHub repo renamed via `gh repo rename`; local remote updated to
-  https://github.com/natahanjr/zebebgna.git
-- Web UI may be running as a hidden `py webapp.py` process on port 5000;
-  kill it before renaming the project folder (Windows folder lock).
-
 ## Session recovery
-- This project's main opencode session: `ses_038f259c8ffekamkUB930ADf3i`
-  (resume with `opencode -s <id>` or the `Zebegna.cmd` helper in the project root)
+- This project's main opencode session can be resumed with `opencode -s <session_id>`

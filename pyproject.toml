@@ -24,7 +24,7 @@ include = ["zebebgna*"]
 zebebgna = ["templates/*.html"]
 
 [project.urls]
-Homepage = "https://github.com/natahanjr/zebebgna"
+Homepage = "https://github.com/RazForge/zebebgna"
 
 [project.optional-dependencies]
 dev = ["pytest", "flake8"]
