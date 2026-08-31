@@ -188,6 +188,7 @@ def test_verify_text_cli():
 def test_webapp_upload_path():
     from webapp import app
 
+    app.config["TESTING"] = True
     client = app.test_client()
     try:
         import reportlab

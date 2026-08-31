@@ -84,7 +84,7 @@ def test_validate_rejects_host_outside_allowlist(monkeypatch):
 
 
 def test_validate_accepts_subdomain_of_allowed_host(monkeypatch):
-    _public_dns(monkeypatch)
+    _public_dns(monkeypatch, hosts=("example.com", "sub.bank.com"))
     assert validate_fetch_target(
         "https://sub.bank.com/r", allowed_hosts={"bank.com"}
     ) is None

@@ -109,6 +109,7 @@
       <form method="post" action="{{ url_for("history_clear") }}"
             style="display:inline; float:right;"
             onsubmit="return confirm('Delete ALL stored checks? This cannot be undone.');">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="clearbtn">Clear all</button>
       </form>
       {% endif %}
@@ -136,11 +137,13 @@
           <td>
             <div class="actions">
               <form method="post" action="{{ url_for("history_feedback", check_id=c.id) }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="ok" value="1">
                 <button type="submit" class="thumb {% if c.feedback == 1 %}on-good{% endif %}"
                         title="Verdict was correct">&#128077;</button>
               </form>
               <form method="post" action="{{ url_for("history_feedback", check_id=c.id) }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="ok" value="0">
                 <button type="submit" class="thumb {% if c.feedback == 0 %}on-bad{% endif %}"
                         title="Verdict was incorrect">&#128078;</button>

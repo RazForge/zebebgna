@@ -1,12 +1,15 @@
 """Dashen Bank receipt extraction (PDF) with secure fetching."""
 
 import io
+import logging
 import re
 from datetime import datetime
 
 import pdfplumber
 
 from zebebgna.fetch import fetcher
+
+log = logging.getLogger(__name__)
 
 
 def extract_dashen_receipt_data(url):
@@ -22,7 +25,7 @@ def extract_dashen_receipt_data(url):
         "channel": re.compile(r"Transaction Channel:\s*(.+?)\n"),
         "service_type": re.compile(r"Service Type:\s*(.+?)\n"),
         "narrative": re.compile(r"Narrative:\s*(.+?)\n"),
-        "beneficiary_name": re.compile(r"Account Holder Name:\s*(.+?)\n"),
+        "beneficiary_name": re.compile(r"Beneficiary\s*[Nn]ame:\s*(.+?)\n"),
         "beneficiary_account": re.compile(r"Account Number:\s*(\d+)"),
         "beneficiary_bank": re.compile(r"Institution Name:\s*(.+?)\n"),
         "transfer_reference": re.compile(r"Transfer Reference:\s*(.+?)\n"),
@@ -39,6 +42,10 @@ def extract_dashen_receipt_data(url):
     for key, pattern in patterns.items():
         match = pattern.search(text)
         data[key] = match.group(1).strip() if match else None
+
+    missing = [k for k, v in data.items() if v is None]
+    if missing:
+        log.warning("Dashen extraction missing fields: %s", ", ".join(missing))
 
     try:
         dt = datetime.strptime(data["transaction_date"], "%b %d, %Y, %I:%M:%S %p")

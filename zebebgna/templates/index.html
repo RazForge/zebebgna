@@ -152,6 +152,7 @@
       </div>
 
       <form method="post" action="/verify" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <label for="bank">Bank</label>
         <select id="bank" name="bank">
           {% for key, name in banks.items() %}

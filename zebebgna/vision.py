@@ -14,6 +14,8 @@ embedded text and pasted text always work).
 import os
 import re
 
+MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
 try:  # pragma: no cover - depends on the Tesseract binary
     from PIL import Image
     import pytesseract
@@ -56,14 +58,22 @@ def extract_image_text(path):
 def extract_file_text(path):
     """Extract text from a PDF or image file (by extension)."""
     lower = path.lower()
+    if not lower.endswith((".pdf", ".png", ".jpg", ".jpeg", ".bmp", ".tif",
+                          ".tiff", ".webp")):
+        raise ValueError(
+            f"Unsupported file type: {path} (use PDF or an image file)"
+        )
+    file_size = os.path.getsize(path)
+    if file_size > MAX_FILE_SIZE_BYTES:
+        raise ValueError(
+            f"File too large: {file_size / 1024 / 1024:.1f} MB "
+            f"(max {MAX_FILE_SIZE_BYTES / 1024 / 1024:.0f} MB)"
+        )
     if lower.endswith((".pdf",)):
         return extract_pdf_text(path)
     if lower.endswith((".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff",
                        ".webp")):
         return extract_image_text(path)
-    raise ValueError(
-        f"Unsupported file type: {path} (use PDF or an image file)"
-    )
 
 
 def decode_qr(path):

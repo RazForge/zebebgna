@@ -11,12 +11,17 @@ list of hostnames the server may fetch (SSRF guard). When unset, only
 HTTPS URLs are accepted (enforced by the secure fetcher).
 """
 
+import hashlib
+import hmac
 import os
 import re
+import secrets
+import time
+from collections import defaultdict
 from urllib.parse import urlparse
 
 import requests
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 
 from zebebgna import verify_extracted_data, verify_file, verify_receipt
 from zebebgna.fetch import InsecureURLError, fetcher, host_is_private_literal
@@ -27,6 +32,45 @@ PKG_DIR = os.path.dirname(os.path.abspath(__import__("zebebgna").__file__))
 TEMPLATE_DIR = os.path.join(PKG_DIR, "templates")
 STATIC_DIR = os.path.join(PKG_DIR, "static")
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path='/static')
+
+# --- Security: SECRET_KEY for sessions and CSRF ---
+app.secret_key = os.environ.get(
+    "ZEBEBGNA_SECRET_KEY",
+    secrets.token_hex(32),
+)
+
+# --- CSRF protection ---
+def generate_csrf_token():
+    if "_csrf_token" not in session:
+        session["_csrf_token"] = secrets.token_hex(32)
+    return session["_csrf_token"]
+
+app.jinja_env.globals["csrf_token"] = generate_csrf_token
+
+
+def _validate_csrf():
+    if app.config.get("TESTING"):
+        return
+    token = request.form.get("_csrf_token") or request.headers.get("X-CSRF-Token")
+    if not token or not hmac.compare_digest(token, session.get("_csrf_token", "")):
+        abort(403)
+
+
+# --- Rate limiting ---
+_rate_store = defaultdict(list)
+RATE_LIMIT_WINDOW = 60  # seconds
+RATE_LIMIT_MAX = 30     # requests per window
+
+
+def _check_rate_limit():
+    ip = request.remote_addr or "unknown"
+    now = time.time()
+    window_start = now - RATE_LIMIT_WINDOW
+    _rate_store[ip] = [t for t in _rate_store[ip] if t > window_start]
+    if len(_rate_store[ip]) >= RATE_LIMIT_MAX:
+        return False
+    _rate_store[ip].append(now)
+    return True
 
 BANK_NAMES = {
     "cbe": "Commercial Bank of Ethiopia (CBE)",
@@ -180,6 +224,13 @@ def index():
 
 @app.route("/verify", methods=["POST"])
 def verify():
+    _validate_csrf()
+    if not _check_rate_limit():
+        return render_template(
+            "index.html", banks=BANK_NAMES,
+            error="Too many requests. Please wait a moment and try again.",
+        ), 429
+
     bank = request.form.get("bank", "").strip().lower()
     url_or_id = request.form.get("url_or_id", "").strip()
     pasted_text = request.form.get("text", "").strip()
@@ -346,6 +397,7 @@ def share_view(check_id):
 
 @app.route("/history/<int:check_id>/feedback", methods=["POST"])
 def history_feedback(check_id):
+    _validate_csrf()
     from zebebgna import history
 
     ok = request.form.get("ok")
@@ -356,6 +408,7 @@ def history_feedback(check_id):
 
 @app.route("/history/clear", methods=["POST"])
 def history_clear():
+    _validate_csrf()
     from zebebgna import history
 
     history.clear()

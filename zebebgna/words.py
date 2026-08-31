@@ -27,7 +27,7 @@ TENS_AM = {
     "ሀምሳ": 50, "ስልሳ": 60, "ስሳ": 60, "ሰባ": 70, "ሰማንያ": 80,
     "ዘጠና": 90,
 }
-SCALES_AM = {"መቶ": 100, "ሺህ": 1000, "ሚሊዮን": 1000000}
+SCALES_AM = {"መቶ": 100, "ሺህ": 1000, "ሚሊዮን": 1000000, "ቢሊዮን": 1000000000}
 
 # Coocurrence words that carry no numeric value on receipts.
 NOISE_WORDS = {"birr", "birrs", "cents", "sent", "cent", "only", "and",
