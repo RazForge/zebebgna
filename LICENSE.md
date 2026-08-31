@@ -20,6 +20,7 @@ For the purposes of this License:
 
 Examples include:
 
+* Ha'araphel — RazForge Lab
 * Natahan — RazForge Lab
 * Henok — RazForge Lab
 * Future RazForge Labs established under the organization
