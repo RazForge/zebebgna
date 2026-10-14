@@ -19,12 +19,15 @@ cannot tunnel into an internal endpoint.
 
 import ipaddress
 import socket
+import time
 from urllib.parse import urljoin, urlparse
 
 import requests
 
 DEFAULT_TIMEOUT = 15
 MAX_REDIRECTS = 5
+MAX_RETRIES = 2
+RETRY_BACKOFF = 1.0
 USER_AGENT = "zebebgna/0.2 (defensive receipt verification agent)"
 
 _PRIVATE_HOSTNAMES = {"localhost", "localhost.localdomain", "ip6-localhost"}
@@ -130,6 +133,24 @@ class SecureFetcher:
                 "non-HTTPS receipt URLs"
             )
 
+    def _request_with_retry(self, url, **kwargs):
+        """Single request with retry on transient network failures.
+
+        Some receipt endpoints (e.g. Telebirr) intermittently accept a
+        connection but never send a response, causing read timeouts.
+        Retrying a small number of times with a short backoff turns an
+        intermittent failure into a reliable fetch.
+        """
+        last_exc = None
+        for attempt in range(1 + MAX_RETRIES):
+            try:
+                return self.session.get(url, **kwargs)
+            except (requests.ConnectionError, requests.Timeout) as exc:
+                last_exc = exc
+                if attempt < MAX_RETRIES:
+                    time.sleep(RETRY_BACKOFF * (attempt + 1))
+        raise last_exc
+
     def get(self, url, **kwargs):
         self.assert_https(url)
         kwargs.setdefault("timeout", DEFAULT_TIMEOUT)
@@ -137,7 +158,7 @@ class SecureFetcher:
         current = url
         for _ in range(MAX_REDIRECTS + 1):
             validate_fetch_target(current, self.allowed_hosts)
-            resp = self.session.get(current, **kwargs)
+            resp = self._request_with_retry(current, **kwargs)
             if not resp.is_redirect:
                 break
             location = resp.headers.get("Location")
