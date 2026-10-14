@@ -210,7 +210,10 @@ def test_feedback_never_raises_unreadable():
     report = VerificationReport(url="https://x.example.com/r", bank="cbe")
     adjusted = assess(report, feedback=(9, 0))
     assert adjusted.unreadable is True
-    assert adjusted.risk_score == 0
+    # Unreadable receipts never drop below the fused HIGH floor (35)
+    # regardless of feedback; confirmed feedback may push it higher.
+    assert adjusted.risk_score >= 35
+    assert adjusted.risk_level == "HIGH"
 
 
 # ---------------------------------------------------------------- pipeline
@@ -221,7 +224,7 @@ def test_unreadable_receipt_is_high_risk_and_red():
     assessment = assess(report)
     assert assessment.unreadable is True
     assert assessment.risk_level == "HIGH"
-    assert assessment.risk_score == 0
+    assert assessment.risk_score >= 35
     assert "receipt_unreadable" in rule_ids(assessment)
     assert "could not be read" in assessment.scenario.lower()
     assert assessment.indicators["receipt_readable"] is False
