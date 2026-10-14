@@ -547,7 +547,11 @@ def assess(report, feedback=None):
         adjustment = _feedback_delta(feedback[0], feedback[1])
         risk_score = min(100, max(0, risk_score + adjustment))
     if unreadable:
-        risk_score = 0
+        # Never let an unreadable receipt drop below the fused HIGH floor:
+        # "high" severity = 35 (the weight of the receipt_unreadable
+        # correlation).  This keeps risk_score consistent with risk_level
+        # (which returns "HIGH" when unreadable) instead of forcing 0.
+        risk_score = max(risk_score, RISK_WEIGHTS["high"])
 
     scenario = None
     for rule_id, text in SCENARIOS:
