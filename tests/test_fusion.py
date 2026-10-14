@@ -200,7 +200,10 @@ def test_feedback_confirmed_raises_risk():
 
 
 def test_feedback_weak_mixed_no_change():
-    report = VerificationReport(url="https://x.example.com/r", bank="cbe")
+    report = VerificationReport(
+        url="https://receipt.dashensuperapp.com/r", bank="dashen",
+        data={"status": "SUCCESS"},
+    )
     adjusted = assess(report, feedback=(2, 2))
     assert adjusted.adjustment == 0
     assert adjusted.risk_score == 0
