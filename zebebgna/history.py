@@ -88,11 +88,11 @@ def import_sql(path):
     try:
         conn.execute("DROP TABLE IF EXISTS checks")
         conn.execute("DROP TABLE IF EXISTS threat_domains")
-        cur = conn.executescript(sql)
+        conn.executescript(sql)
         conn.commit()
     finally:
         conn.close()
-    return cur.rowcount
+    return sql.count(";")
 
 
 def _connect():

@@ -1,5 +1,6 @@
 """Tests for Phase B operational tooling: watch, backup, config (Tier 6)."""
 
+import re
 import sys
 from unittest import mock
 
@@ -43,12 +44,16 @@ def test_backup_export_import_roundtrip(db, capsys, tmp_path):
     assert dump.exists()
     out = capsys.readouterr().out
     assert "Exported" in out
+    exported = int(re.search(r"Exported (\d+) SQL statements", out).group(1))
+    assert exported > 0
 
     history.clear()
     history.clear_threat_domains()
     assert history.list_checks() == []
 
     assert _run_cli(["backup", "import", str(dump)]) == 0
+    out = capsys.readouterr().out
+    assert f"Imported {exported} SQL statements" in out
     checks = history.list_checks()
     assert len(checks) == 1
     assert checks[0]["url"] == "https://apps.cbe.com.et:100/?id=FT123"
