@@ -130,11 +130,19 @@ def test_unparsable_date():
 
 
 def test_ethiopian_calendar_date_interpreted():
-    # 13/09/2016 read as EC = Sep 13, 2023 GC (within the last 5 years).
-    result = parse_and_plausibility("13/09/2016")
-    if result.status == "ok":
-        assert result.ec_readable is not None
-        assert "ዓ.ም." in result.ec_readable
+    # "26/01/2016" (day > 12, unambiguous d/m/Y) is Meskerem 26 of the
+    # 2016 EC year = Oct 7, 2023 GC: a recent EC receipt date that must
+    # not be reported as an "old"/implausible GC date.
+    result = parse_and_plausibility("26/01/2016")
+    assert result.status == "ok"
+    assert result.gc_date == datetime.date(2023, 10, 7)
+    assert "መስከረም" in result.ec_readable
+
+
+def test_ancient_ethiopian_calendar_date_still_old():
+    # EC 1999 maps to GC 2006-2007: still implausibly old either way.
+    result = parse_and_plausibility("26/01/1999")
+    assert result.status == "old"
 
 
 def test_geez_numeral_date():

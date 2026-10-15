@@ -219,21 +219,20 @@ def parse_and_plausibility(text):
     if not gc:
         return Result("unparsable", None, None)
 
-    # A year far outside a sane GC receipt window is re-read as an
-    # Ethiopian-calendar year: EC 1999..2026 maps to GC 2006..2034, and
-    # receipts are routinely dated in EC.
-    if not (1980 <= gc.year <= today.year + 1):
+    # Receipts are routinely dated in the Ethiopian calendar (EC), whose
+    # years map 7-8 GC years ahead. The same digits can read as either a
+    # recent GC date or an EC date: keep the GC reading when it could be a
+    # real, freshly-checked receipt date; otherwise re-read the year as EC
+    # and adopt that reading when it is plausible. When neither reading is
+    # plausible, keep the plain GC diagnosis (future/old) so genuinely
+    # future or ancient dates are still reported as such.
+    if not _is_plausible_gc(gc, today):
         ec = _ec_year_to_gc(gc)
         if ec:
             ec_gc, ec_year = ec
-            if ec_gc > today + timedelta(days=2):
-                return Result("future", ec_gc, ec_readable(
+            if _is_plausible_gc(ec_gc, today):
+                return Result("ok", ec_gc, ec_readable(
                     ec_year, gc.month, gc.day))
-            if ec_gc < today - timedelta(days=365 * 5):
-                return Result("old", ec_gc, ec_readable(
-                    ec_year, gc.month, gc.day))
-            return Result("ok", ec_gc, ec_readable(ec_year, gc.month, gc.day))
-        return Result("unparsable", gc, None)
 
     if gc > today + timedelta(days=2):
         return Result("future", gc, None)
@@ -257,6 +256,11 @@ def _ec_year_to_gc(d):
         if 1900 <= candidate.year <= 2100:
             return (candidate, ec_year)
     return None
+
+
+def _is_plausible_gc(value, today):
+    """True when ``value`` could be a real, freshly-checked GC receipt date."""
+    return today - timedelta(days=365 * 5) <= value <= today + timedelta(days=2)
 
 
 def _ec_readable_or_none(gc_date):
