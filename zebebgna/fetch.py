@@ -38,6 +38,19 @@ class InsecureURLError(ValueError):
     """Raised when a caller attempts to fetch a non-HTTPS URL."""
 
 
+def url_port(parsed_url, default=None):
+    """Port from ``parsed_url``, or ``default`` when absent or invalid.
+
+    ``urllib.parse`` raises ``ValueError`` for out-of-range or non-numeric
+    ports; audits must degrade to "no usable port" instead of crashing.
+    """
+    try:
+        port = parsed_url.port
+    except ValueError:
+        return default
+    return default if port is None else port
+
+
 def _ip_is_internal(ip):
     return (
         ip.is_private or ip.is_loopback or ip.is_link_local

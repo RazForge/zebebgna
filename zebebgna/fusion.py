@@ -22,6 +22,7 @@ import difflib
 import re
 from urllib.parse import urlparse
 
+from zebebgna.fetch import url_port
 from zebebgna.report import SEVERITY_WEIGHTS, has_receipt_data
 from zebebgna.verifiers import phishing
 
@@ -140,7 +141,7 @@ class SignalBundle:
         self.data = report.data or {}
         self.scheme = (parsed.scheme or "").lower()
         self.host = (parsed.hostname or "").lower()
-        self.port = parsed.port
+        self.port = url_port(parsed)
         self.path = parsed.path or ""
         self.registered = phishing._registered_domain(self.host)
 

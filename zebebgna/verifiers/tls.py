@@ -6,6 +6,8 @@ import socket
 import ssl
 from urllib.parse import urlparse
 
+from zebebgna.fetch import url_port
+
 
 WEAK_PROTOCOLS = {"TLSv1", "TLSv1.1", "SSLv3"}
 WEAK_SIG_ALGOS = {"sha1", "md5"}
@@ -53,7 +55,7 @@ def audit_tls(url, report):
     if not host:
         report.add_finding("error", "tls", "Cannot audit TLS: URL has no hostname")
         return
-    port = parsed.port or 443
+    port = url_port(parsed) or 443
 
     context = ssl.create_default_context()
     try:

@@ -71,6 +71,24 @@ def test_phishing_flags_punycode_and_odd_port():
     assert ("warn", "url") in cats
 
 
+def test_phishing_invalid_port_is_reported_not_crash():
+    # urllib.parse raises ValueError for out-of-range ports; the audit
+    # must degrade to a finding instead of crashing.
+    report = VerificationReport(url="https://x.example.com:99999/r")
+    phishing.audit_url(report.url, report)
+    assert any("invalid port" in f.message.lower() for f in report.findings)
+
+
+def test_url_port_helper_tolerates_invalid_ports():
+    from urllib.parse import urlparse
+
+    from zebebgna.fetch import url_port
+
+    assert url_port(urlparse("https://x.example.com:99999/r")) is None
+    assert url_port(urlparse("https://x.example.com:8443/r")) == 8443
+    assert url_port(urlparse("https://x.example.com/r"), 443) == 443
+
+
 # --------------------------------------------------------------- integrity
 
 def test_integrity_cbe_amounts_consistent():

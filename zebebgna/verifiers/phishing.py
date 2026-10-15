@@ -61,7 +61,16 @@ def audit_url(url, report):
     parsed = urlparse(url)
     scheme = (parsed.scheme or "").lower()
     host = (parsed.hostname or "").lower()
-    port = parsed.port
+    try:
+        port = parsed.port
+    except ValueError:
+        # ``urlparse`` rejects out-of-range/non-numeric ports: report the
+        # malformed port instead of crashing the whole audit.
+        port = None
+        report.add_finding(
+            "warn", "url",
+            f"URL has an invalid port: {parsed.netloc}",
+        )
 
     if scheme != "https":
         report.add_finding(

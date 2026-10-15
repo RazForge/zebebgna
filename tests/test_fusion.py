@@ -39,6 +39,19 @@ def test_threat_assessment_roundtrip_keeps_adjustment():
     assert rebuilt.risk_level == assessment.risk_level
 
 
+def test_assess_with_invalid_port_does_not_crash():
+    report = VerificationReport(
+        url="https://x.example.com:99999/r", bank="cbe",
+        data={"status": "SUCCESS"},
+    )
+    report.add_finding(
+        "warn", "url", "URL has an invalid port: x.example.com:99999"
+    )
+    assessment = assess(report)
+    assert assessment.risk_score >= 0
+    assert assessment.risk_level in ("LOW", "MEDIUM", "HIGH", "CRITICAL")
+
+
 def test_to_dict_serializable():
     report = VerificationReport(
         url="https://example.com", bank="cbe", data={"status": "SUCCESS"}
