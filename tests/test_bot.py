@@ -65,3 +65,67 @@ def test_build_app_requires_token():
         build_app(token=None)
     with pytest.raises(ValueError):
         build_app(token="")
+
+
+# ------------------------------------------- /verifytext handler (Tier 5)
+
+class _FakeMessage:
+    def __init__(self):
+        self.replies = []
+
+    async def reply_text(self, text, **kwargs):
+        self.replies.append(text)
+
+
+class _FakeUpdate:
+    def __init__(self):
+        self.message = _FakeMessage()
+
+
+class _FakeContext:
+    def __init__(self, args):
+        self.args = args
+
+
+def test_verifytext_handler_parses_bank_and_text(monkeypatch):
+    import asyncio
+
+    from zebebgna import bot
+
+    calls = {}
+
+    def fake_verify_text(bank, text):
+        calls["bank"] = bank
+        calls["text"] = text
+        return VerificationReport(
+            url="telegram-text", bank=bank, data={"status": "SUCCESS"}
+        )
+
+    monkeypatch.setattr(bot, "_verify_text", fake_verify_text)
+    update = _FakeUpdate()
+    asyncio.run(
+        bot._handle_verify(
+            update, _FakeContext(["cbe", "Payer", "Name:", "John"]), mode="text"
+        )
+    )
+    assert calls == {"bank": "cbe", "text": "Payer Name: John"}
+    assert len(update.message.replies) == 1
+    assert "Tell me the bank first" not in update.message.replies[0]
+
+
+def test_verifytext_handler_asks_for_bank(monkeypatch):
+    import asyncio
+
+    from zebebgna import bot
+
+    def fail_verify_text(bank, text):  # pragma: no cover - must not run
+        raise AssertionError("_verify_text should not run without a bank")
+
+    monkeypatch.setattr(bot, "_verify_text", fail_verify_text)
+    update = _FakeUpdate()
+    asyncio.run(
+        bot._handle_verify(
+            update, _FakeContext(["Payer", "Name:", "John"]), mode="text"
+        )
+    )
+    assert "Tell me the bank first" in update.message.replies[0]

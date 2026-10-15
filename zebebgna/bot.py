@@ -103,10 +103,7 @@ def _verify_file(bank, path):
 async def _handle_verify(update, context, mode="link"):
     user_text = " ".join(context.args)
     if mode == "text":
-        bank, target = parse_verify_command("x " + user_text)
-        if not bank:
-            target = user_text
-            bank = None
+        bank, target = parse_verify_command(user_text)
         if not bank:
             await update.message.reply_text(
                 "Tell me the bank first, e.g. /verifytext cbe <text>"
