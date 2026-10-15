@@ -46,6 +46,15 @@ def test_add_normalizes_and_rejects_empty(db):
     assert not history.add_threat_domain(None)
 
 
+def test_remove_normalizes_wildcard_input(db):
+    # A domain added as "*.scam-receipts.et" is stored stripped down to
+    # its registered domain; removing it with the same spelling must work.
+    assert history.add_threat_domain("*.scam-receipts.et", "fake link")
+    assert history.is_threat_domain("scam-receipts.et")
+    assert history.remove_threat_domain("*.scam-receipts.et") == 1
+    assert not history.is_threat_domain("scam-receipts.et")
+
+
 def test_fusion_raises_error_correlation_for_known_domain(db):
     from zebebgna.fusion import assess
     from zebebgna.report import VerificationReport

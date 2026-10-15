@@ -239,12 +239,17 @@ def report_from_record(check):
 
 # -- community phishing-domain database ---------------------------------------
 
+def _normalize_domain(domain):
+    """Lowercase, trim, and strip a leading ``*.``/``.`` wildcard prefix."""
+    return (domain or "").strip().lower().lstrip("*.").lstrip(".")
+
+
 def add_threat_domain(domain, reason=None, source=None):
     """Record a registered domain as community-reported phishing.
 
     Returns True when newly added, False when already known.
     """
-    domain = (domain or "").strip().lower().lstrip("*.").lstrip(".")
+    domain = _normalize_domain(domain)
     if not domain:
         return False
     conn = _connect()
@@ -262,8 +267,12 @@ def add_threat_domain(domain, reason=None, source=None):
 
 
 def remove_threat_domain(domain):
-    """Remove a domain from the threat database. Returns rows removed."""
-    domain = (domain or "").strip().lower()
+    """Remove a domain from the threat database. Returns rows removed.
+
+    Uses the same normalization as :func:`add_threat_domain`, so a domain
+    added as ``*.example.com`` can be removed with the same spelling.
+    """
+    domain = _normalize_domain(domain)
     conn = _connect()
     try:
         cur = conn.execute(
