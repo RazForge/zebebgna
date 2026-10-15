@@ -24,6 +24,21 @@ def test_clean_known_bank_host_is_low_risk():
     assert assessment.scenario is None
 
 
+def test_threat_assessment_roundtrip_keeps_adjustment():
+    # to_dict() serializes the feedback adjustment, so from_dict() (used
+    # when replaying archived/shared reports) must restore it.
+    report = VerificationReport(
+        url="https://x.example.com/r", bank="cbe",
+        data={"status": "SUCCESS"},
+    )
+    assessment = assess(report, feedback=(9, 0))
+    assert assessment.adjustment == 5
+    rebuilt = ThreatAssessment.from_dict(assessment.to_dict())
+    assert rebuilt.adjustment == 5
+    assert rebuilt.risk_score == assessment.risk_score
+    assert rebuilt.risk_level == assessment.risk_level
+
+
 def test_to_dict_serializable():
     report = VerificationReport(
         url="https://example.com", bank="cbe", data={"status": "SUCCESS"}

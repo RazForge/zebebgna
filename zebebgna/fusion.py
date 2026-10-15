@@ -103,6 +103,7 @@ class ThreatAssessment:
             scenario=payload.get("scenario"),
             indicators=payload.get("indicators", {}),
             unreadable=payload.get("unreadable", False),
+            adjustment=payload.get("feedback_adjustment", 0),
         )
 
     @property
