@@ -242,10 +242,10 @@ def main():
             urls = list(args.urls)
             if args.file:
                 with open(args.file, "r", encoding="utf-8") as fh:
-                    urls.extend(
-                        line.strip() for line in fh
-                        if line.strip() and not line.startswith("#")
-                    )
+                    for line in fh:
+                        line = line.strip()
+                        if line and not line.startswith("#"):
+                            urls.append(line)
             if not urls:
                 print("Error: no receipt links given (use positional args or --file)")
                 return 1

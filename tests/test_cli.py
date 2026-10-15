@@ -55,6 +55,29 @@ def test_batch_reads_file(db, tmp_path):
     assert len(history.list_checks()) == 2
 
 
+def test_batch_file_ignores_indented_comments(db, tmp_path):
+    # Comment lines with leading whitespace must be skipped, not treated
+    # as receipt links (an indented comment used to abort the whole batch).
+    from zebebgna import cli
+
+    urls_file = tmp_path / "urls.txt"
+    urls_file.write_text(
+        "  # indented comment\n"
+        "https://a.example.com/r1\n"
+        "\n"
+        "\t# tab-indented comment\n"
+        "   \n"
+        "https://a.example.com/r2\n",
+        encoding="utf-8",
+    )
+    fake = mock.Mock(side_effect=lambda *a, **k: _fake_report(a[1]))
+    with mock.patch.object(cli, "verify_receipt", fake):
+        code = _run_cli(["batch", "cbe", "--file", str(urls_file)])
+    assert code == 0
+    assert fake.call_count == 2
+    assert len(history.list_checks()) == 2
+
+
 def test_history_and_feedback_commands(db):
     with mock.patch(
         "zebebgna.verify_receipt",
