@@ -188,6 +188,66 @@ def test_tls_audit_handles_connection_failure_gracefully():
                for f in report.findings)
 
 
+def test_tls_san_wildcard_matches_subdomains():
+    assert tls._san_covers_host("files.example.com", [("DNS", "*.example.com")])
+    assert tls._san_covers_host("example.com", [("DNS", "example.com")])
+    assert not tls._san_covers_host("example.com", [("DNS", "*.example.com")])
+    assert not tls._san_covers_host(
+        "evil-example.com", [("DNS", "*.example.com")]
+    )
+    assert not tls._san_covers_host(
+        "files.example.com", [("DNS", "*.example.org")]
+    )
+    assert tls._san_covers_host(
+        "files.example.com",
+        [("DNS", "other.example"), ("DNS", "*.example.com")],
+    )
+
+
+def _audit_tls_with_cert(url, san_entries):
+    """Run audit_tls with the TLS handshake faked to present ``san_entries``."""
+    cert = {
+        "notBefore": "Sep 01 00:00:00 2026 GMT",
+        "notAfter": "Dec 01 00:00:00 2026 GMT",
+        "subjectAltName": san_entries,
+        "issuer": ((("organizationName", "Test CA"),),),
+    }
+    tls_sock = mock.MagicMock()
+    tls_sock.__enter__.return_value = tls_sock
+    tls_sock.getpeercert.return_value = cert
+    tls_sock.version.return_value = "TLSv1.3"
+    context = mock.MagicMock()
+    context.wrap_socket.return_value = tls_sock
+
+    report = VerificationReport(url=url)
+    with mock.patch(
+        "zebebgna.verifiers.tls.ssl.create_default_context",
+        return_value=context,
+    ), mock.patch(
+        "zebebgna.verifiers.tls.socket.create_connection",
+        return_value=mock.MagicMock(),
+    ):
+        tls.audit_tls(url, report)
+    return report
+
+
+def test_tls_audit_wildcard_only_certificate_not_flagged():
+    report = _audit_tls_with_cert(
+        "https://files.pythonhosted.org/r", [("DNS", "*.pythonhosted.org")]
+    )
+    assert not any("does not cover" in f.message for f in report.findings)
+
+
+def test_tls_audit_uncovered_hostname_is_flagged():
+    report = _audit_tls_with_cert(
+        "https://files.otherdomain.com/r", [("DNS", "*.pythonhosted.org")]
+    )
+    assert any(
+        f.severity == "critical" and "does not cover" in f.message
+        for f in report.findings
+    )
+
+
 # --------------------------------------------------------------- pipeline
 
 def test_verify_receipt_pipeline_end_to_end():

@@ -23,6 +23,29 @@ def _as_utc(dt):
     return dt.astimezone(datetime.timezone.utc)
 
 
+def _san_covers_host(host, entries):
+    """True when a certificate's SAN entries cover ``host``.
+
+    Exact names match directly; DNS wildcard entries (``*.example.com``)
+    cover subdomains the same way TLS stacks accept them. Wildcard names
+    must not be compared literally, otherwise every wildcard-only
+    certificate would be misreported as not covering its host.
+    """
+    host = (host or "").lower().rstrip(".")
+    for entry_type, value in entries or ():
+        if entry_type not in ("DNS", "IP Address"):
+            continue
+        name = (value or "").lower().rstrip(".")
+        if not name:
+            continue
+        if name == host:
+            return True
+        if (entry_type == "DNS" and name.startswith("*.")
+                and host.endswith("." + name[2:])):
+            return True
+    return False
+
+
 def audit_tls(url, report):
     """Connect to the URL's host over TLS and audit the presented certificate."""
     parsed = urlparse(url)
@@ -116,7 +139,7 @@ def audit_tls(url, report):
 
     san = cert.get("subjectAltName", [])
     names = [value for entry_type, value in san if entry_type == "DNS"]
-    if names and host not in names and not any(host.endswith("." + n) for n in names):
+    if names and not _san_covers_host(host, san):
         report.add_finding(
             "critical", "tls",
             f"Certificate does not cover hostname '{host}' (SAN: {names or 'none'})",
