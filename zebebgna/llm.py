@@ -131,11 +131,17 @@ def _endpoint():
 
 def _headers():
     headers = {"Content-Type": "application/json"}
-    key_env = PROVIDERS.get(provider(), {}).get("key")
-    if key_env:
-        key = os.environ.get(key_env, "")
-        if key:
-            headers["Authorization"] = f"Bearer {key}"
+    # The generic ``ZEBEBGNA_LLM_API_KEY`` override takes precedence;
+    # otherwise fall back to the provider-specific variable. `zebebgna
+    # config` and the docs both advertise the generic variable, so it
+    # must actually authenticate requests.
+    key = os.environ.get("ZEBEBGNA_LLM_API_KEY", "")
+    if not key:
+        key_env = PROVIDERS.get(provider(), {}).get("key")
+        if key_env:
+            key = os.environ.get(key_env, "")
+    if key:
+        headers["Authorization"] = f"Bearer {key}"
     return headers
 
 

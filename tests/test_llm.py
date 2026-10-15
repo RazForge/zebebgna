@@ -101,6 +101,28 @@ def test_review_non_200_returns_none():
         assert review_report(report) is None
 
 
+def test_generic_api_key_env_authenticates():
+    # ``zebebgna config`` and the docs advertise ZEBEBGNA_LLM_API_KEY; it
+    # must actually be used for authentication.
+    with mock.patch.dict("os.environ", {
+        "ZEBEBGNA_LLM_PROVIDER": "deepseek",
+        "ZEBEBGNA_LLM_API_KEY": "sk-generic",
+        "DEEPSEEK_API_KEY": "",
+    }, clear=False):
+        headers = llm._headers()
+    assert headers["Authorization"] == "Bearer sk-generic"
+
+
+def test_provider_key_used_when_generic_key_absent():
+    with mock.patch.dict("os.environ", {
+        "ZEBEBGNA_LLM_PROVIDER": "deepseek",
+        "ZEBEBGNA_LLM_API_KEY": "",
+        "DEEPSEEK_API_KEY": "sk-provider",
+    }, clear=False):
+        headers = llm._headers()
+    assert headers["Authorization"] == "Bearer sk-provider"
+
+
 def test_custom_model_and_base_url():
     report = _report()
     fake_response = mock.Mock()
