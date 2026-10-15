@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import pytest
 
@@ -26,6 +27,13 @@ def test_english_amount_words():
 def test_english_amount_words_with_cents():
     assert parse_amount_words("One Thousand Birr and Fifty Cents Only") == 1000.50
     assert parse_amount_words("Two Hundred Birr and Twenty-Five Cents") == 200.25
+
+
+def test_amharic_amount_words_with_santim():
+    # "ሳንቲም" is the Amharic word for cents; it must be split from the
+    # birr amount like the English "cents", not added as whole birr.
+    assert parse_amount_words("አንድ ሺህ ብር ሃምሳ ሳንቲም") == Decimal("1000.50")
+    assert parse_amount_words("ሁለት መቶ ብር ሃያ አምስት ሳንቲም") == Decimal("200.25")
 
 
 def test_amount_words_mixed_digits():

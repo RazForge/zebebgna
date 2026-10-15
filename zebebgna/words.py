@@ -94,9 +94,10 @@ def parse_amount_words(text):
 
     cents_tokens = []
     for i, token in enumerate(tokens):
-        if token.startswith("cent"):
-            # The cent amount is the numeric phrase directly before the
-            # word "cent(s)": "… and fifty cents …".
+        if token.startswith("cent") or token.startswith("ሳንቲም"):
+            # The cent/santim amount is the numeric phrase directly before
+            # the word "cent(s)"/"ሳንቲም": "… and fifty cents …",
+            # "… ሃምሳ ሳንቲም …".
             j = i - 1
             while j >= 0 and _word_value(tokens[j]) is not None:
                 j -= 1
