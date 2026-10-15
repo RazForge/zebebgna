@@ -130,7 +130,8 @@ def _host_allowed(url):
 
 def _normalize_url(bank, url_or_id):
     url = url_or_id
-    if not url.startswith("http") and bank == "tele":
+    # Schemes are case-insensitive (RFC 3986): "HTTPS://…" is a full URL.
+    if not url.lower().startswith("http") and bank == "tele":
         url = f"https://transactioninfo.ethiotelecom.et/receipt/{url_or_id}"
     return url
 
@@ -274,7 +275,7 @@ def verify():
             )
         else:
             url = _normalize_url(bank, url_or_id)
-            if url.startswith("http"):
+            if url.lower().startswith("http"):
                 if not _host_allowed(url):
                     return render_template(
                         "index.html", banks=BANK_NAMES,

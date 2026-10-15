@@ -60,6 +60,32 @@ def test_verify_renders_report(client, db):
     assert b"Missing security header: CSP" in resp.data
 
 
+def test_verify_accepts_uppercase_scheme_url(client, db):
+    # URL schemes are case-insensitive (RFC 3986): an uppercase-scheme
+    # receipt link must not be rejected as invalid.
+    report = VerificationReport(
+        url="HTTPS://apps.cbe.com.et:100/?id=FT25211G11JQ21827223",
+        bank="cbe",
+        data={"customer_name": "TEST USER", "status": "SUCCESS"},
+    )
+    with mock.patch.object(webapp, "verify_receipt", return_value=report) as vr:
+        resp = client.post(
+            "/verify",
+            data={
+                "bank": "cbe",
+                "url_or_id": "HTTPS://apps.cbe.com.et:100/?id=FT25211G11JQ21827223",
+            },
+        )
+    vr.assert_called_once()
+    assert resp.status_code == 200
+    assert b"does not look like a valid receipt link" not in resp.data
+
+
+def test_normalize_url_keeps_uppercase_tele_url():
+    url = "HTTPS://transactioninfo.ethiotelecom.et/receipt/ABC123"
+    assert webapp._normalize_url("tele", url) == url
+
+
 def test_verify_renders_fail_verdict_for_critical(client, db):
     report = VerificationReport(
         url="https://x.example.com/r", bank="cbe", data={}

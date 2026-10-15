@@ -45,7 +45,7 @@ def extract_tele_receipt_data(url_or_id: str) -> Dict[str, str]:
     if not url_or_id:
         raise ValueError("Telebirr receipt id or URL is required")
 
-    url = url_or_id if url_or_id.startswith(
+    url = url_or_id if url_or_id.lower().startswith(
         "http") else f"https://transactioninfo.ethiotelecom.et/receipt/{url_or_id}"
 
     soup = BeautifulSoup(fetcher.fetch_text(url), "html.parser")

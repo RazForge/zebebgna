@@ -338,6 +338,23 @@ def test_audit_receipt_url_rejects_http_in_fetch():
         audit_receipt_url("http://receipt.example.com/r")
 
 
+def test_verify_receipt_accepts_uppercase_scheme():
+    # URL schemes are case-insensitive (RFC 3986); an uppercase-scheme
+    # receipt link is a URL, not a bare Telebirr receipt ID.
+    extractor = mock.Mock(return_value={})
+    with mock.patch(
+        "zebebgna.verifiers.tls.audit_tls", return_value=None
+    ), mock.patch.object(
+        fetcher, "fetch_headers", side_effect=RuntimeError("offline"),
+    ):
+        with mock.patch.dict("zebebgna.EXTRACTORS", {"cbe": extractor}):
+            report = verify_receipt(
+                "cbe", "HTTPS://apps.cbe.com.et:100/?id=FT123"
+            )
+    extractor.assert_called_once_with("HTTPS://apps.cbe.com.et:100/?id=FT123")
+    assert report.url == "HTTPS://apps.cbe.com.et:100/?id=FT123"
+
+
 def test_phishing_flags_valid_ip_literal():
     report = VerificationReport(url="https://8.8.8.8/receipt/123")
     phishing.audit_url(report.url, report)
@@ -458,3 +475,21 @@ def test_tele_extractor_reads_real_structure():
     assert data["total_paid"] == "312 Birr"
     assert data["reference_no"] == "CHQ0FJ403O"
     assert "amount" not in data
+
+
+def test_tele_extractor_accepts_uppercase_scheme(monkeypatch):
+    from zebebgna.extractors import tele
+
+    captured = {}
+
+    def fake_fetch(url):
+        captured["url"] = url
+        return "<table></table>"
+
+    monkeypatch.setattr(tele.fetcher, "fetch_text", fake_fetch)
+    tele.extract_tele_receipt_data(
+        "HTTPS://transactioninfo.ethiotelecom.et/receipt/ABC123"
+    )
+    assert captured["url"] == (
+        "HTTPS://transactioninfo.ethiotelecom.et/receipt/ABC123"
+    )

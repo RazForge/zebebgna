@@ -51,7 +51,9 @@ def verify_receipt(bank, url_or_id, feedback=None):
         raise ValueError("A receipt URL or ID is required")
 
     url = url_or_id
-    if not url.startswith("http"):
+    # URL schemes are case-insensitive (RFC 3986), so match "http" loosely
+    # and leave normalisation to urllib/requests.
+    if not url.lower().startswith("http"):
         if bank != "tele":
             raise ValueError("A full URL is required for this bank")
         url = f"https://transactioninfo.ethiotelecom.et/receipt/{url_or_id}"
