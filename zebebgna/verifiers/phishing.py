@@ -109,11 +109,18 @@ def audit_url(url, report):
             "bank endpoints use .com.et, .com, or .et TLDs",
         )
 
+    host_registered = _registered_domain(host)
     for known in KNOWN_BANK_DOMAINS:
         if host == known or host.endswith("." + known):
             continue
+        known_registered = _registered_domain(known)
+        if known_registered == host_registered:
+            # Same registered domain (e.g. cbe.com.et vs apps.cbe.com.et):
+            # a legitimate bank domain is not a lookalike of its own
+            # official subdomains.
+            continue
         ratio = difflib.SequenceMatcher(
-            None, _registered_domain(host), _registered_domain(known)
+            None, host_registered, known_registered
         ).ratio()
         if ratio >= LOOKALIKE_THRESHOLD:
             report.add_finding(

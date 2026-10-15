@@ -59,6 +59,17 @@ def test_lookalike_domain_correlates_to_phishing():
     assert assessment.indicators["official_domain_match"] is False
 
 
+def test_known_apex_domain_is_not_a_lookalike():
+    report = VerificationReport(
+        url="https://cbe.com.et/x", bank="cbe",
+        data={"status": "SUCCESS"},
+    )
+    report.add_finding("info", "tls", "Certificate valid until 2030")
+    assessment = assess(report)
+    assert "phish_lookalike" not in rule_ids(assessment)
+    assert assessment.risk_level == "LOW"
+
+
 def test_fraud_campaign_combo_is_critical():
     report = VerificationReport(
         url="https://dashensuperapp.ru/pay", bank="dashen",

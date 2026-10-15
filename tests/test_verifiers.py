@@ -38,9 +38,24 @@ def test_phishing_flags_shortener():
 
 
 def test_phishing_flags_lookalike_domain():
-    report = VerificationReport(url="https://dashensuperapp.com/receipt/123")
+    report = VerificationReport(url="https://dashensuperapp.ru/receipt/123")
     phishing.audit_url(report.url, report)
     assert ("warn", "phishing") in finding_categories(report)
+
+
+def test_phishing_known_apex_domains_not_flagged():
+    # A bank's own apex domain must never be treated as a lookalike of its
+    # official subdomains (cbe.com.et vs apps.cbe.com.et, ...).
+    for url in (
+        "https://cbe.com.et/",
+        "https://dashensuperapp.com/receipt/123",
+        "https://awashbank.com/",
+        "https://zemenbank.com/",
+        "https://ethiotelecom.et/",
+    ):
+        report = VerificationReport(url=url)
+        phishing.audit_url(url, report)
+        assert not any(f.category == "phishing" for f in report.findings), url
 
 
 def test_phishing_known_subdomain_not_flagged():

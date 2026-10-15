@@ -167,8 +167,13 @@ class SignalBundle:
         for known in phishing.KNOWN_BANK_DOMAINS:
             if self.host == known or self.host.endswith("." + known):
                 continue
+            known_registered = phishing._registered_domain(known)
+            if known_registered == self.registered:
+                # Same registered domain (e.g. cbe.com.et vs
+                # apps.cbe.com.et): not a lookalike of itself.
+                continue
             ratio = difflib.SequenceMatcher(
-                None, self.registered, phishing._registered_domain(known)
+                None, self.registered, known_registered
             ).ratio()
             if ratio >= phishing.LOOKALIKE_THRESHOLD and ratio > best_ratio:
                 best, best_ratio = known, ratio
