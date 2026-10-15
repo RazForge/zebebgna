@@ -86,7 +86,10 @@ def _check_reference(bank, data, report):
 
 def verify_integrity(bank, data, report):
     """Run authenticity heuristics over extracted receipt data."""
-    status_raw = data.get("status") or data.get("transaction_status")
+    status_raw = (
+        data.get("status") or data.get("transaction_status")
+        or data.get("Transaction Status")
+    )
     status = str(status_raw).strip().upper() if status_raw else ""
     if status and status not in SUCCESS_STATUSES:
         report.add_finding(

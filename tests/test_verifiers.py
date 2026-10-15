@@ -107,6 +107,27 @@ def test_integrity_flags_non_success_status():
     assert any(f.severity == "critical" for f in report.findings)
 
 
+def test_integrity_flags_non_success_zemen_status():
+    # Zemen extractor/scanner emit the status as the "Transaction Status"
+    # field, which must not bypass the non-success check.
+    report = VerificationReport(
+        bank="zemen", url="https://share.zemenbank.com/x"
+    )
+    integrity.verify_integrity(
+        "zemen", {"Transaction Status": "FAILED"}, report
+    )
+    assert any(f.severity == "critical" and f.category == "integrity"
+               for f in report.findings)
+
+    ok = VerificationReport(
+        bank="zemen", url="https://share.zemenbank.com/x"
+    )
+    integrity.verify_integrity(
+        "zemen", {"Transaction Status": "SUCCESS"}, ok
+    )
+    assert not any(f.severity == "critical" for f in ok.findings)
+
+
 def test_integrity_flags_bad_cbe_reference():
     report = VerificationReport(bank="cbe", url="https://example.com")
     integrity.verify_integrity(
