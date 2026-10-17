@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import threading
 
 import pytest
 
@@ -162,3 +163,35 @@ def test_migrate_old_database(tmp_path, monkeypatch):
 
     new_id = history.record(_report(), owner="alice")
     assert history.get_check(new_id)["owner"] == "alice"
+
+
+# -- concurrency ----------------------------------------------------------------
+
+
+def test_connect_sets_concurrency_pragmas(db):
+    conn = history._connect()
+    try:
+        assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
+        assert conn.execute("PRAGMA busy_timeout").fetchone()[0] == 10000
+        assert conn.execute("PRAGMA synchronous").fetchone()[0] == 1
+    finally:
+        conn.close()
+
+
+def test_concurrent_writers_all_succeed(db):
+    errors = []
+
+    def worker():
+        try:
+            for _ in range(5):
+                history.record(_report())
+        except Exception as exc:  # pragma: no cover - failure detail
+            errors.append(exc)
+
+    threads = [threading.Thread(target=worker) for _ in range(8)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert errors == []
+    assert len(history.list_checks(limit=100)) == 40

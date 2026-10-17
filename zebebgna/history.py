@@ -113,6 +113,13 @@ def _connect():
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     conn = sqlite3.connect(path)
     conn.execute("PRAGMA journal_mode=WAL")
+    # Wait for concurrent writers instead of failing with "database is
+    # locked" (matters when several web workers share the file), and
+    # pair WAL with synchronous=NORMAL: the recommended combination,
+    # which can only lose recent commits on an OS crash - never corrupt
+    # the database.
+    conn.execute("PRAGMA busy_timeout=10000")
+    conn.execute("PRAGMA synchronous=NORMAL")
     conn.executescript(_SCHEMA)
     conn.executescript(_THREAT_SCHEMA)
     conn.row_factory = sqlite3.Row
