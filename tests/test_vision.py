@@ -29,6 +29,19 @@ def test_scan_cbe_text():
     assert data["customer_name"] == "ABEBE BEKELE"
 
 
+def test_scan_cbe_payer_receiver_stop_at_line_end():
+    # Pasted multi-line CBE text: the name captures must not run into the
+    # following lines (they used to swallow "Receiver"/"Transferred Amount").
+    text = (
+        "Payment Date & Time 01/15/2024, 09:30:00 AM\n"
+        "Payer\nABEBE BEKELE\nReceiver\nDAWIT TADESSE\n"
+        "Transferred Amount 1,000.00 ETB\n"
+    )
+    data = scan_fields("cbe", text)
+    assert data["payer"] == "ABEBE BEKELE"
+    assert data["receiver"] == "DAWIT TADESSE"
+
+
 def test_scan_empty_and_none():
     assert scan_fields("cbe", "") == {}
     assert scan_fields("cbe", None) == {}
