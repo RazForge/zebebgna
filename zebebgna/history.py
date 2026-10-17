@@ -11,8 +11,11 @@ The database location is taken from the ``ZEBEBGNA_DB`` environment
 variable and defaults to ``~/.zebebgna/checks.db``.
 """
 
+import hashlib
+import hmac
 import json
 import os
+import secrets
 import sqlite3
 from datetime import datetime
 from urllib.parse import urlparse
@@ -33,9 +36,16 @@ CREATE TABLE IF NOT EXISTS checks (
     status TEXT,
     risk_level TEXT,
     feedback INTEGER,
-    report_json TEXT NOT NULL
+    report_json TEXT NOT NULL,
+    owner TEXT,
+    share_token TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_checks_ts ON checks(ts);
+CREATE TABLE IF NOT EXISTS users (
+    username TEXT PRIMARY KEY,
+    password_hash TEXT NOT NULL,
+    created TEXT NOT NULL
+);
 """
 
 _THREAT_SCHEMA = """
@@ -61,7 +71,7 @@ def db_path():
 
 
 def export_sql(path):
-    """Dump the whole database (checks + threat domains) to ``path``.
+    """Dump the whole database (checks, threat domains, accounts) to ``path``.
 
     Returns the number of SQL statements written.
     """
@@ -78,9 +88,9 @@ def export_sql(path):
 def import_sql(path):
     """Restore a database from an ``export_sql`` dump.
 
-    The existing local checks and threat domains are replaced by the
-    dump content (restore semantics). Returns the number of SQL
-    statements executed.
+    The existing local checks, threat domains, and web accounts are
+    replaced by the dump content (restore semantics). Returns the
+    number of SQL statements executed.
     """
     with open(path, "r", encoding="utf-8") as fh:
         sql = fh.read()
@@ -88,6 +98,7 @@ def import_sql(path):
     try:
         conn.execute("DROP TABLE IF EXISTS checks")
         conn.execute("DROP TABLE IF EXISTS threat_domains")
+        conn.execute("DROP TABLE IF EXISTS users")
         conn.executescript(sql)
         conn.commit()
     finally:
@@ -105,7 +116,36 @@ def _connect():
     conn.executescript(_SCHEMA)
     conn.executescript(_THREAT_SCHEMA)
     conn.row_factory = sqlite3.Row
+    _migrate(conn)
     return conn
+
+
+def _migrate(conn):
+    """Bring databases created by older releases up to the current schema.
+
+    ``CREATE TABLE IF NOT EXISTS`` leaves existing tables untouched, so
+    columns added in later releases (``owner``, ``share_token``) must be
+    added explicitly. Rows stored before share tokens existed get a
+    fresh unguessable token.
+    """
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(checks)")}
+    if "owner" not in columns:
+        conn.execute("ALTER TABLE checks ADD COLUMN owner TEXT")
+    if "share_token" not in columns:
+        conn.execute("ALTER TABLE checks ADD COLUMN share_token TEXT")
+    missing = conn.execute(
+        "SELECT id FROM checks WHERE share_token IS NULL"
+    ).fetchall()
+    for (check_id,) in missing:
+        conn.execute(
+            "UPDATE checks SET share_token = ? WHERE id = ?",
+            (secrets.token_urlsafe(16), check_id),
+        )
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_checks_share_token "
+        "ON checks(share_token)"
+    )
+    conn.commit()
 
 
 def _registered_domain(url):
@@ -113,16 +153,22 @@ def _registered_domain(url):
     return phishing._registered_domain(host) if host else None
 
 
-def record(report):
-    """Persist a VerificationReport and return its new check id."""
+def record(report, owner=None):
+    """Persist a VerificationReport and return its new check id.
+
+    ``owner`` is the web account that ran the check (None in CLI/local
+    mode). Every row also gets an unguessable share token so archived
+    reports can be shared without exposing sequential check ids.
+    """
     threat = report.threat
     conn = _connect()
     try:
         cur = conn.execute(
             """
             INSERT INTO checks (ts, url, registered_domain, bank, score,
-                                status, risk_level, feedback, report_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)
+                                status, risk_level, feedback, report_json,
+                                owner, share_token)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?)
             """,
             (
                 datetime.now().isoformat(timespec="seconds"),
@@ -133,6 +179,8 @@ def record(report):
                 report.status,
                 threat.risk_level if threat else None,
                 json.dumps(report.to_dict()),
+                owner,
+                secrets.token_urlsafe(16),
             ),
         )
         conn.commit()
@@ -141,13 +189,24 @@ def record(report):
         conn.close()
 
 
-def list_checks(limit=50):
-    """Return the most recent checks as dicts (newest first)."""
+def list_checks(limit=50, owner=None):
+    """Return the most recent checks as dicts (newest first).
+
+    ``owner`` filters to a single web account; None returns every row
+    (CLI/local mode).
+    """
     conn = _connect()
     try:
-        rows = conn.execute(
-            "SELECT * FROM checks ORDER BY id DESC LIMIT ?", (limit,)
-        ).fetchall()
+        if owner is None:
+            rows = conn.execute(
+                "SELECT * FROM checks ORDER BY id DESC LIMIT ?", (limit,)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM checks WHERE owner = ? ORDER BY id DESC "
+                "LIMIT ?",
+                (owner, limit),
+            ).fetchall()
         return [dict(row) for row in rows]
     finally:
         conn.close()
@@ -159,6 +218,24 @@ def get_check(check_id):
     try:
         row = conn.execute(
             "SELECT * FROM checks WHERE id = ?", (check_id,)
+        ).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def get_check_by_token(share_token):
+    """Return a single check by share token, or None.
+
+    Share links use these random tokens instead of the sequential check
+    id so an archived report cannot be found by counting up.
+    """
+    if not share_token:
+        return None
+    conn = _connect()
+    try:
+        row = conn.execute(
+            "SELECT * FROM checks WHERE share_token = ?", (share_token,)
         ).fetchone()
         return dict(row) if row else None
     finally:
@@ -179,11 +256,20 @@ def record_feedback(check_id, correct):
         conn.close()
 
 
-def clear():
-    """Delete all stored checks. Returns the number removed."""
+def clear(owner=None):
+    """Delete stored checks. Returns the number removed.
+
+    ``owner`` restricts the deletion to one web account's checks; None
+    clears everything (CLI/local mode).
+    """
     conn = _connect()
     try:
-        cur = conn.execute("DELETE FROM checks")
+        if owner is None:
+            cur = conn.execute("DELETE FROM checks")
+        else:
+            cur = conn.execute(
+                "DELETE FROM checks WHERE owner = ?", (owner,)
+            )
         conn.commit()
         return cur.rowcount
     finally:
@@ -235,6 +321,124 @@ def report_from_record(check):
 
         report.ai_review = AIVerdict.from_dict(ai_review)
     return report
+
+
+# -- web accounts --------------------------------------------------------------
+
+_PBKDF2_ITERATIONS = 200_000
+
+_dummy_password_hash = None
+
+
+def _hash_password(password, salt=None, iterations=_PBKDF2_ITERATIONS):
+    salt = salt or secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), bytes.fromhex(salt), iterations
+    )
+    return f"pbkdf2_sha256${iterations}${salt}${digest.hex()}"
+
+
+def _verify_password(password, stored):
+    try:
+        algorithm, iterations, salt, digest = stored.split("$")
+        iterations = int(iterations)
+        salt_bytes = bytes.fromhex(salt)
+        expected = bytes.fromhex(digest)
+    except (AttributeError, ValueError):
+        return False
+    if algorithm != "pbkdf2_sha256":
+        return False
+    candidate = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), salt_bytes, iterations
+    )
+    return hmac.compare_digest(candidate, expected)
+
+
+def _burn_password_check(password):
+    """Run one PBKDF2 verification for an unknown user.
+
+    Keeps the response time of "unknown user" and "wrong password"
+    comparable so accounts cannot be enumerated by timing.
+    """
+    global _dummy_password_hash
+    if _dummy_password_hash is None:
+        _dummy_password_hash = _hash_password(secrets.token_hex(16))
+    return _verify_password(password or "", _dummy_password_hash)
+
+
+def add_user(username, password):
+    """Create a web account. Returns False when the name is taken/invalid."""
+    username = (username or "").strip().lower()
+    password = password or ""
+    if not username or not password:
+        return False
+    conn = _connect()
+    try:
+        try:
+            conn.execute(
+                "INSERT INTO users (username, password_hash, created) "
+                "VALUES (?, ?, ?)",
+                (username, _hash_password(password),
+                 datetime.now().isoformat(timespec="seconds")),
+            )
+        except sqlite3.IntegrityError:
+            return False
+        conn.commit()
+        return True
+    finally:
+        conn.close()
+
+
+def verify_user(username, password):
+    """True when the account exists and the password matches."""
+    username = (username or "").strip().lower()
+    conn = _connect()
+    try:
+        row = conn.execute(
+            "SELECT password_hash FROM users WHERE username = ?", (username,)
+        ).fetchone()
+    finally:
+        conn.close()
+    if row is None:
+        _burn_password_check(password)
+        return False
+    return _verify_password(password or "", row["password_hash"])
+
+
+def has_users():
+    """True when at least one web account exists."""
+    conn = _connect()
+    try:
+        row = conn.execute("SELECT 1 FROM users LIMIT 1").fetchone()
+        return row is not None
+    finally:
+        conn.close()
+
+
+def list_users():
+    """Return the web accounts (name + creation date), sorted by name."""
+    conn = _connect()
+    try:
+        rows = conn.execute(
+            "SELECT username, created FROM users ORDER BY username"
+        ).fetchall()
+        return [dict(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def remove_user(username):
+    """Delete a web account. Returns the number of rows removed."""
+    username = (username or "").strip().lower()
+    conn = _connect()
+    try:
+        cur = conn.execute(
+            "DELETE FROM users WHERE username = ?", (username,)
+        )
+        conn.commit()
+        return cur.rowcount
+    finally:
+        conn.close()
 
 
 # -- community phishing-domain database ---------------------------------------

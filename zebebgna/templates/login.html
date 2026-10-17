@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in - Zebebgna</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}?v=2">
+  <style>
+    :root {
+      --indigo: #4f46e5; --violet: #7c3aed;
+      --ink: #0f172a; --muted: #64748b; --faint: #94a3b8;
+      --bg: #f6f7fb; --card: #ffffff; --line: #e7e9f2;
+      --red: #dc2626;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Segoe UI Variable", "Segoe UI", -apple-system,
+        BlinkMacSystemFont, Roboto, Inter, Arial, sans-serif;
+      background: var(--bg); color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    .topbar {
+      background: rgba(255, 255, 255, .82); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-inner {
+      max-width: 940px; margin: 0 auto; padding: 12px 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .logo {
+      width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 19px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, .35);
+    }
+    .logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 11px; }
+    .brand-name { font-weight: 800; font-size: 16px; letter-spacing: -.2px; }
+    .brand-tag { font-size: 11.5px; color: var(--muted); margin-top: -2px; }
+    main { max-width: 940px; margin: 0 auto; padding: 30px 24px 10px; }
+    .card {
+      background: var(--card); border-radius: 16px; padding: 26px 28px;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--line);
+      max-width: 420px; margin: 40px auto 16px;
+    }
+    h1 { font-size: 22px; letter-spacing: -.4px; margin: 0 0 6px; }
+    .sub { color: var(--muted); font-size: 13.5px; margin: 0 0 18px; line-height: 1.5; }
+    label { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: .6px; margin: 14px 0 5px; }
+    input[type=text], input[type=password] {
+      width: 100%; padding: 11px 13px; border: 1px solid var(--line);
+      border-radius: 10px; font-size: 14px; font-family: inherit; color: var(--ink);
+      background: #fbfcff;
+    }
+    input:focus { outline: 2px solid rgba(79, 70, 229, .35); border-color: var(--indigo); }
+    button[type=submit] {
+      margin-top: 20px; width: 100%; padding: 12px 16px; border: none;
+      border-radius: 10px; background: linear-gradient(135deg, var(--indigo), var(--violet));
+      color: #fff; font-size: 14px; font-weight: 800; font-family: inherit;
+      cursor: pointer; letter-spacing: .3px;
+    }
+    button[type=submit]:hover { filter: brightness(1.07); }
+    .error {
+      background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;
+      padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13.5px;
+    }
+    code { background: #eef2ff; padding: 1px 6px; border-radius: 6px; font-size: 12.5px; }
+    footer { text-align: center; font-size: 12px; color: var(--faint); padding: 30px 24px 44px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo"><img src="{{ url_for('static', filename='logo.png') }}?v=2" alt="Zebebgna Logo"></div>
+      <div>
+        <div class="brand-name">Zebebgna</div>
+        <div class="brand-tag">receipt authenticity guard</div>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div class="card">
+      <h1>Sign in</h1>
+      <p class="sub">This Zebebgna instance requires an account. The administrator
+        creates accounts from the command line:
+        <code>zebebgna user add &lt;name&gt;</code>.</p>
+
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+      <form method="post" action="{{ url_for('login') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ next }}">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username"
+               autocapitalize="none" autofocus>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password"
+               autocomplete="current-password">
+        <button type="submit">Sign in</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>Zebebgna &middot; history is stored locally on this machine only.</footer>
+</body>
+</html>

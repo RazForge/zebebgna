@@ -47,8 +47,8 @@ file first to recall the full context before doing any work on it.
 - Operational tooling: `zebebgna watch <bank> <input> --every N --count M`
   (scheduled re-verification), `zebebgna backup export|import <file>` (SQLite
   dump/restore, replaces local data on import), `zebebgna config show`.
-- Shareable reports: web UI `/share/<check_id>` link (archived banner, no
-  admin chrome) plus a Share chip on fresh report pages.
+- Shareable reports: web UI `/share/<token>` link (unguessable share token,
+  archived banner, no admin chrome) plus a Share chip on fresh report pages.
 - Never fetches plain HTTP — `SecureFetcher` (zebebgna/fetch.py) enforces HTTPS +
   strict TLS verification (the original project had `verify_ssl=False`; we removed that)
 
@@ -59,7 +59,12 @@ file first to recall the full context before doing any work on it.
 - **Web UI (for non-technical users):** `python webapp.py` → http://127.0.0.1:5000
   (Flask; form + color-coded verdict page; optional SSRF allowlist via
   `zebebgna_ALLOWED_HOSTS` env var); webapp.py lives at repo ROOT (not in the
-  package), templates/static inside `zebebgna/`.
+  package), templates/static inside `zebebgna/`. Accounts: `zebebgna user
+  add|list|remove` (PBKDF2-hashed in SQLite); once an account exists the UI
+  requires login, history is scoped per account, and share links use
+  unguessable tokens (`/share/<token>`). With no accounts the UI stays open
+  (local mode). Session secret persists next to the DB (0600) unless
+  `ZEBEBGNA_SECRET_KEY` is set.
 - **Telegram bot (optional):** `zebebgna/bot.py`, run `python -m zebebgna.bot`
   with `ZEBEBGNA_TELEGRAM_TOKEN`; `/verify <bank> <link|id>`, `/verifytext`,
   photo/PDF uploads; pure logic (`parse_verify_command`, `format_verdict`) is

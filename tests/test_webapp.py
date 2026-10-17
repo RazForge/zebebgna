@@ -308,17 +308,25 @@ def test_verify_page_offers_share_link(client, db):
                   "url_or_id": "https://apps.cbe.com.et:100/?id=FT123"},
         )
     assert resp.status_code == 200
-    check_id = history.list_checks()[0]["id"]
-    assert f"/share/{check_id}".encode() in resp.data
+    token = history.list_checks()[0]["share_token"]
+    assert f"/share/{token}".encode() in resp.data
 
 
 def test_share_view_renders_archived_report(client, db):
     check_id = history.record(_report())
-    resp = client.get(f"/share/{check_id}")
+    token = history.get_check(check_id)["share_token"]
+    resp = client.get(f"/share/{token}")
     assert resp.status_code == 200
     assert b"Verification Result" in resp.data
     assert b"archived report" in resp.data
-    assert b"BACK TO HISTORY" not in resp.data.upper() or True
+
+
+def test_share_view_rejects_sequential_id(client, db):
+    # Share links must use the unguessable token, never the check id.
+    check_id = history.record(_report())
+    assert history.get_check(check_id)["share_token"] != str(check_id)
+    resp = client.get(f"/share/{check_id}")
+    assert b"No stored check" in resp.data
 
 
 def test_share_view_missing_check(client, db):
@@ -340,3 +348,124 @@ def test_history_page_shows_clear_button(client, db):
     resp = client.get("/history")
     assert resp.status_code == 200
     assert b"Clear all" in resp.data
+
+
+# ------------------------------------------------------------------- accounts
+
+
+@pytest.fixture
+def auth(client, db):
+    webapp._login_failures.clear()
+    history.add_user("alice", "alice-pw")
+    yield
+    webapp._login_failures.clear()
+    history.remove_user("alice")
+
+
+def _login(client, username="alice", password="alice-pw"):
+    return client.post(
+        "/login", data={"username": username, "password": password}
+    )
+
+
+def test_login_page_redirects_home_without_accounts(client, db):
+    resp = client.get("/login")
+    assert resp.status_code == 302
+
+
+def test_auth_redirects_anonymous_to_login(client, auth):
+    resp = client.get("/")
+    assert resp.status_code == 302
+    assert "/login" in resp.headers["Location"]
+    resp = client.get("/history")
+    assert resp.status_code == 302
+    assert "/login" in resp.headers["Location"]
+
+
+def test_login_flow(client, auth):
+    resp = client.get("/login")
+    assert resp.status_code == 200
+    assert b"Sign in" in resp.data
+
+    resp = _login(client, password="wrong")
+    assert resp.status_code == 200
+    assert b"Invalid username or password" in resp.data
+
+    resp = _login(client)
+    assert resp.status_code == 302
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert b"Sign out (alice)" in resp.data
+
+    resp = client.post("/logout")
+    assert resp.status_code == 302
+    assert client.get("/").status_code == 302
+
+
+def test_login_next_param_cannot_leave_site(client, auth):
+    resp = client.post(
+        "/login?next=https://evil.example.com",
+        data={"username": "alice", "password": "alice-pw"},
+    )
+    assert resp.status_code == 302
+    assert "evil.example.com" not in resp.headers["Location"]
+
+
+def test_history_scoped_to_logged_in_user(client, auth):
+    history.add_user("bob", "bob-pw")
+    alice_id = history.record(
+        _report(url="https://a.example.com/r"), owner="alice"
+    )
+    bob_id = history.record(
+        _report(url="https://b.example.com/r"), owner="bob"
+    )
+
+    assert _login(client).status_code == 302
+    resp = client.get("/history")
+    assert b"a.example.com" in resp.data
+    assert b"b.example.com" not in resp.data
+
+    assert client.get(f"/history/{alice_id}").status_code == 200
+    assert client.get(f"/history/{bob_id}").status_code == 403
+
+    resp = client.post(f"/history/{bob_id}/feedback", data={"ok": "1"})
+    assert resp.status_code == 403
+    assert history.get_check(bob_id)["feedback"] is None
+
+    # Feedback on the user's own check still works.
+    resp = client.post(f"/history/{alice_id}/feedback", data={"ok": "1"})
+    assert resp.status_code == 302
+    assert history.get_check(alice_id)["feedback"] == 1
+
+    history.remove_user("bob")
+
+
+def test_verify_records_owner_and_share_token(client, auth):
+    assert _login(client).status_code == 302
+    with mock.patch.object(webapp, "verify_receipt", return_value=_report()):
+        resp = client.post(
+            "/verify",
+            data={"bank": "cbe",
+                  "url_or_id": "https://apps.cbe.com.et:100/?id=FT123"},
+        )
+    assert resp.status_code == 200
+    rows = history.list_checks()
+    assert len(rows) == 1
+    assert rows[0]["owner"] == "alice"
+    assert f"/share/{rows[0]['share_token']}".encode() in resp.data
+
+
+def test_share_link_is_public_even_with_accounts(client, auth):
+    check_id = history.record(_report(), owner="alice")
+    token = history.get_check(check_id)["share_token"]
+    anonymous = webapp.app.test_client()
+    resp = anonymous.get(f"/share/{token}")
+    assert resp.status_code == 200
+    assert b"archived report" in resp.data
+
+
+def test_login_rate_limit_blocks_brute_force(client, auth):
+    for _ in range(10):
+        _login(client, password="wrong")
+    resp = _login(client)  # correct password, but the door is shut
+    assert b"Too many failed login attempts" in resp.data

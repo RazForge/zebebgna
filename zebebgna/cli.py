@@ -164,6 +164,11 @@ def main():
     tdb.add_argument("domain", nargs="?", help="Registered domain")
     tdb.add_argument("reason", nargs="?", help="Why the domain is reported")
 
+    user = sub.add_parser("user", help="Manage web UI accounts")
+    user.add_argument("action", choices=["add", "list", "remove"],
+                      help="add <name> | list | remove <name>")
+    user.add_argument("username", nargs="?", help="Account name")
+
     watch = sub.add_parser(
         "watch", help="Re-verify a receipt link on a schedule"
     )
@@ -331,6 +336,48 @@ def main():
                     for row in rows:
                         reason = f" - {row['reason']}" if row["reason"] else ""
                         print(f"{row['domain']} (since {row['ts']}){reason}")
+        elif args.command == "user":
+            action = args.action
+            if action == "list":
+                rows = history.list_users()
+                if not rows:
+                    print("No web accounts yet - the web UI is open "
+                          "(no login required).")
+                else:
+                    for row in rows:
+                        print(f"{row['username']} (created {row['created']})")
+            elif action == "add":
+                if not args.username:
+                    print("Error: user add requires a username")
+                    return 1
+                import getpass
+
+                password = getpass.getpass("Password: ")
+                if not password:
+                    print("Error: password must not be empty")
+                    return 1
+                if password != getpass.getpass("Repeat password: "):
+                    print("Error: passwords do not match")
+                    return 1
+                if history.add_user(args.username, password):
+                    print(f"User '{args.username.strip().lower()}' added. "
+                          f"The web UI now requires login.")
+                else:
+                    print(f"Error: could not add '{args.username}' "
+                          f"(name already taken or invalid)")
+                    return 1
+            else:
+                if not args.username:
+                    print("Error: user remove requires a username")
+                    return 1
+                if history.remove_user(args.username):
+                    print(f"User '{args.username.strip().lower()}' removed.")
+                    if not history.list_users():
+                        print("No accounts left - the web UI is open again "
+                              "(no login required).")
+                else:
+                    print(f"Error: no user named '{args.username}'")
+                    return 1
         elif args.command == "watch":
             import time
 
@@ -396,6 +443,7 @@ def main():
                 print(f"ZEBEBGNA_DB env: {db}")
             print(f"Threat domains: {len(history.list_threat_domains())}")
             print(f"History checks: {len(history.list_checks(limit=1000))}")
+            print(f"Web accounts: {len(history.list_users())}")
             for key in ("ZEBEBGNA_LLM_API_KEY", "ZEBEBGNA_TELEGRAM_TOKEN"):
                 value = os.environ.get(key)
                 print(f"{key}: {'set' if value else 'not set'}")

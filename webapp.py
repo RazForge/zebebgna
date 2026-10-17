@@ -39,6 +39,11 @@ app.secret_key = os.environ.get(
     secrets.token_hex(32),
 )
 
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+)
+
 # --- CSRF protection ---
 def generate_csrf_token():
     if "_csrf_token" not in session:
@@ -54,6 +59,85 @@ def _validate_csrf():
     token = request.form.get("_csrf_token") or request.headers.get("X-CSRF-Token")
     if not token or not hmac.compare_digest(token, session.get("_csrf_token", "")):
         abort(403)
+
+
+# --- Accounts: login gate and per-user history -------------------------------
+
+LOGIN_WINDOW = 300  # seconds
+LOGIN_MAX_FAILURES = 10
+_login_failures = defaultdict(list)
+
+
+def _login_rate_ok():
+    ip = request.remote_addr or "unknown"
+    now = time.time()
+    window_start = now - LOGIN_WINDOW
+    _login_failures[ip] = [t for t in _login_failures[ip] if t > window_start]
+    return len(_login_failures[ip]) < LOGIN_MAX_FAILURES
+
+
+def _safe_next(target):
+    """Only allow local redirect targets (no open redirects)."""
+    if target and target.startswith("/") and not target.startswith("//"):
+        return target
+    return "/"
+
+
+def _owned(check):
+    """True when the current visitor may act on this stored check."""
+    from zebebgna import history
+
+    if not history.has_users():
+        return True
+    return check.get("owner") == session.get("user")
+
+
+@app.before_request
+def _require_login():
+    """Gate the UI behind a login once at least one account exists."""
+    from zebebgna import history
+
+    if request.endpoint in ("login", "static", "share_view"):
+        return None
+    if not history.has_users() or session.get("user"):
+        return None
+    if request.method == "GET":
+        return redirect(url_for("login", next=request.path))
+    abort(401)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    from zebebgna import history
+
+    if not history.has_users():
+        return redirect(url_for("index"))
+    next_url = _safe_next(request.values.get("next", "/"))
+    error = None
+    if request.method == "POST":
+        _validate_csrf()
+        if not _login_rate_ok():
+            error = ("Too many failed login attempts. "
+                     "Please wait a few minutes and try again.")
+        else:
+            username = request.form.get("username", "")
+            password = request.form.get("password", "")
+            if history.verify_user(username, password):
+                session.clear()
+                session["user"] = username.strip().lower()
+                return redirect(next_url)
+            _login_failures[request.remote_addr or "unknown"].append(
+                time.time()
+            )
+            error = "Invalid username or password."
+    return render_template("login.html", error=error, next=next_url)
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    _validate_csrf()
+    session.pop("user", None)
+    return redirect(url_for("index"))
 
 
 # --- Rate limiting ---
@@ -331,8 +415,11 @@ def verify():
         )
 
     try:
-        report.check_id = history.record(report)
+        report.check_id = history.record(report, owner=session.get("user"))
+        stored = history.get_check(report.check_id)
+        share_token = stored["share_token"] if stored else None
     except Exception as exc:
+        share_token = None
         app.logger.warning("Could not store check in history: %s", exc)
 
     context = _report_context(report)
@@ -340,6 +427,7 @@ def verify():
         report=report,
         ai_review=report.ai_review,
         check_id=report.check_id,
+        share_token=share_token,
         bank_name=BANK_NAMES.get(report.bank, report.bank),
         severity_labels=SEVERITY_LABELS,
     )
@@ -350,7 +438,8 @@ def verify():
 def history_page():
     from zebebgna import history
 
-    rows = history.list_checks(limit=100)
+    owner = session.get("user") if history.has_users() else None
+    rows = history.list_checks(limit=100, owner=owner)
     return render_template("history.html", checks=rows)
 
 
@@ -359,9 +448,13 @@ def history_view(check_id):
     from zebebgna import history
 
     check = history.get_check(check_id)
+    if check and not _owned(check):
+        abort(403)
     if not check:
+        owner = session.get("user") if history.has_users() else None
         return render_template(
-            "history.html", checks=history.list_checks(limit=100),
+            "history.html",
+            checks=history.list_checks(limit=100, owner=owner),
             error=f"No stored check with id {check_id}.",
         )
     report = history.report_from_record(check)
@@ -370,22 +463,23 @@ def history_view(check_id):
         report=report,
         ai_review=report.ai_review,
         check_id=check["id"],
+        share_token=check["share_token"],
         bank_name=BANK_NAMES.get(report.bank, report.bank or "audit"),
         severity_labels=SEVERITY_LABELS,
     )
     return render_template("report.html", **context)
 
 
-@app.route("/share/<int:check_id>")
-def share_view(check_id):
-    """Public shareable link: same stored report, no admin chrome."""
+@app.route("/share/<token>")
+def share_view(token):
+    """Public shareable link (unguessable token): stored report, no chrome."""
     from zebebgna import history
 
-    check = history.get_check(check_id)
+    check = history.get_check_by_token(token)
     if not check:
         return render_template(
             "index.html", banks=BANK_NAMES,
-            error=f"No stored check with id {check_id}.",
+            error="No stored check matches this share link.",
         )
     report = history.report_from_record(check)
     context = _report_context(report)
@@ -405,6 +499,11 @@ def history_feedback(check_id):
     _validate_csrf()
     from zebebgna import history
 
+    check = history.get_check(check_id)
+    if not check:
+        abort(404)
+    if not _owned(check):
+        abort(403)
     ok = request.form.get("ok")
     if ok in ("1", "0"):
         history.record_feedback(check_id, ok == "1")
@@ -416,7 +515,8 @@ def history_clear():
     _validate_csrf()
     from zebebgna import history
 
-    history.clear()
+    owner = session.get("user") if history.has_users() else None
+    history.clear(owner=owner)
     return redirect(url_for("history_page"))
 
 

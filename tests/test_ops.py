@@ -117,3 +117,40 @@ def test_watch_handles_verify_errors(db, capsys):
     assert code == 0
     out = capsys.readouterr().out
     assert "network down" in out
+
+
+# --------------------------------------------------------------------- user
+
+
+def test_user_add_list_remove(db, capsys, monkeypatch):
+    monkeypatch.setattr("getpass.getpass", lambda prompt="": "s3cret-pw")
+
+    assert _run_cli(["user", "add", "alice"]) == 0
+    out = capsys.readouterr().out
+    assert "alice" in out and "requires login" in out
+    assert history.verify_user("alice", "s3cret-pw")
+
+    assert _run_cli(["user", "list"]) == 0
+    assert "alice" in capsys.readouterr().out
+
+    # Duplicate account name is refused.
+    assert _run_cli(["user", "add", "alice"]) == 1
+    assert "could not add" in capsys.readouterr().out
+
+    assert _run_cli(["user", "remove", "alice"]) == 0
+    out = capsys.readouterr().out
+    assert "removed" in out and "open again" in out
+    assert not history.has_users()
+
+
+def test_user_add_rejects_mismatched_passwords(db, capsys, monkeypatch):
+    answers = iter(["one", "two"])
+    monkeypatch.setattr("getpass.getpass", lambda prompt="": next(answers))
+    assert _run_cli(["user", "add", "bob"]) == 1
+    assert "do not match" in capsys.readouterr().out
+    assert not history.has_users()
+
+
+def test_user_remove_unknown(db, capsys):
+    assert _run_cli(["user", "remove", "ghost"]) == 1
+    assert "no user named" in capsys.readouterr().out

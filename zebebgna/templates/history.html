@@ -100,6 +100,13 @@
         <div class="brand-tag">verification history</div>
       </div>
       <a class="navlink" href="/">&#8592; New check</a>
+      {% if session.get("user") %}
+      <form method="post" action="{{ url_for('logout') }}" style="margin:0;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <button class="navlink" type="submit"
+                style="background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Sign out ({{ session.get("user") }})</button>
+      </form>
+      {% endif %}
     </div>
   </div>
 

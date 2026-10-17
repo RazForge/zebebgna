@@ -207,6 +207,13 @@
 {% if not share %}
       <a class="backlink" href="/history">History</a>
       <a class="backlink" style="margin-left:16px" href="/">&#8592; New check</a>
+      {% if session.get("user") %}
+      <form method="post" action="{{ url_for('logout') }}" style="margin:0;margin-left:16px;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <button class="backlink" type="submit"
+                style="background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Sign out ({{ session.get("user") }})</button>
+      </form>
+      {% endif %}
       {% endif %}
     </div>
   </div>
@@ -246,8 +253,8 @@
     </div>
 
     <div class="link"><b>Checked link:</b> <code>{{ report.url }}</code>
-      {% if check_id and not share %}
-      <a class="share-chip" href="/share/{{ check_id }}">Share &#8599;</a>
+      {% if share_token and not share %}
+      <a class="share-chip" href="/share/{{ share_token }}">Share &#8599;</a>
       {% endif %}
     </div>
 
