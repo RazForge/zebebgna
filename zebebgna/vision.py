@@ -16,11 +16,14 @@ import re
 
 MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
 
-try:  # pragma: no cover - depends on the Tesseract binary
+try:  # pragma: no cover - Pillow ships with pdfplumber
     from PIL import Image
-    import pytesseract
 except Exception:  # pragma: no cover
     Image = None
+
+try:  # pragma: no cover - depends on the Tesseract binary
+    import pytesseract
+except Exception:  # pragma: no cover
     pytesseract = None
 
 try:  # pragma: no cover - depends on the zxing-cpp wheel

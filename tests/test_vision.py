@@ -276,6 +276,22 @@ def test_decode_qr_missing_or_bad_file(tmp_path):
     assert decode_qr(str(text)) is None
 
 
+def test_qr_decoding_survives_missing_pytesseract():
+    # QR decoding needs only Pillow; a missing pytesseract (OCR is an
+    # optional feature) must not disable it.
+    import os
+    import subprocess
+
+    code = (
+        "import sys; sys.modules['pytesseract'] = None;"
+        "import zebebgna.vision as v;"
+        "assert v.pytesseract is None;"
+        "assert v.Image is not None"
+    )
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    subprocess.run([sys.executable, "-c", code], cwd=repo_root, check=True)
+
+
 def test_verify_file_records_qr_payload(tmp_path):
     from PIL import Image
     import qrcode
