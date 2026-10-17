@@ -141,6 +141,18 @@ def test_unparsable_date():
     assert parse_and_plausibility(None).status == "unparsable"
 
 
+def test_month_name_date_with_time_parses():
+    # Dashen receipts render e.g. "Sep 15, 2025, 10:30:00 AM". Stripping
+    # the time must also consume the comma before it, otherwise the date
+    # is left as "Sep 15, 2025," and reads as unparsable.
+    result = parse_and_plausibility("Sep 15, 2025, 10:30:00 AM")
+    assert result.gc_date == datetime.date(2025, 9, 15)
+    result = parse_and_plausibility("September 15, 2025, 10:30:00 AM")
+    assert result.gc_date == datetime.date(2025, 9, 15)
+    result = parse_and_plausibility("15-Sep-2025 14:00")
+    assert result.gc_date == datetime.date(2025, 9, 15)
+
+
 def test_ethiopian_calendar_date_interpreted():
     # "26/01/2016" (day > 12, unambiguous d/m/Y) is Meskerem 26 of the
     # 2016 EC year = Oct 7, 2023 GC: a recent EC receipt date that must

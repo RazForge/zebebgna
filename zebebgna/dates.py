@@ -137,11 +137,13 @@ def ec_readable(ey, em, ed):
 
 def _strip_time(text):
     # "9/12/2023, 10:30 AM" -> "9/12/2023"; "12-Sep-2023 14:00" -> ...
-    text = re.sub(r"\s+\d{1,2}:\d{2}(:\d{2})?\s*(AM|PM|am|pm)?$", "", text.strip())
+    # The separator before the time may be a comma ("Sep 15, 2025, 10:30
+    # AM"): it must be consumed with the time, or the leftover comma makes
+    # month-name dates read as unparsable.
     text = re.sub(
         r",?\s*\d{1,2}:\d{2}(:\d{2})?\s*(AM|PM|am|pm)?$", "", text.strip()
     )
-    return text.strip()
+    return text.strip().rstrip(",").strip()
 
 
 def _parse_raw(text):
