@@ -469,3 +469,22 @@ def test_login_rate_limit_blocks_brute_force(client, auth):
         _login(client, password="wrong")
     resp = _login(client)  # correct password, but the door is shut
     assert b"Too many failed login attempts" in resp.data
+
+
+def test_session_secret_persists_across_restarts(tmp_path, monkeypatch):
+    monkeypatch.setenv("ZEBEBGNA_DB", str(tmp_path / "checks.db"))
+    monkeypatch.delenv("ZEBEBGNA_SECRET_KEY", raising=False)
+    first = webapp._load_or_create_secret()
+    second = webapp._load_or_create_secret()
+    assert first == second
+    secret_file = tmp_path / "secret_key"
+    assert secret_file.read_text(encoding="utf-8").strip() == first
+    # The key must not be readable by other local users.
+    assert (secret_file.stat().st_mode & 0o777) == 0o600
+
+
+def test_session_secret_env_var_wins(tmp_path, monkeypatch):
+    monkeypatch.setenv("ZEBEBGNA_DB", str(tmp_path / "checks.db"))
+    monkeypatch.setenv("ZEBEBGNA_SECRET_KEY", "from-env")
+    assert webapp._load_or_create_secret() == "from-env"
+    assert not (tmp_path / "secret_key").exists()

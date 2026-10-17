@@ -34,10 +34,51 @@ STATIC_DIR = os.path.join(PKG_DIR, "static")
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path='/static')
 
 # --- Security: SECRET_KEY for sessions and CSRF ---
-app.secret_key = os.environ.get(
-    "ZEBEBGNA_SECRET_KEY",
-    secrets.token_hex(32),
-)
+def _load_or_create_secret():
+    """Return a persistent session secret.
+
+    ``ZEBEBGNA_SECRET_KEY`` always wins. Otherwise a generated key is
+    stored next to the history database (mode 0600) so logins and CSRF
+    tokens survive restarts instead of being invalidated by a fresh
+    random key on every start.
+    """
+    env = os.environ.get("ZEBEBGNA_SECRET_KEY")
+    if env:
+        return env
+
+    from zebebgna import history
+
+    path = os.path.join(os.path.dirname(history.db_path()), "secret_key")
+
+    def _read():
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                return fh.read().strip()
+        except OSError:
+            return ""
+
+    secret = _read()
+    if secret:
+        return secret
+
+    secret = secrets.token_hex(32)
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        # Another worker created the key first; use theirs.
+        return _read() or secret
+    except OSError:
+        app.logger.warning(
+            "Could not persist session secret at %s; sessions will not "
+            "survive a restart", path,
+        )
+        return secret
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(secret + "\n")
+    return secret
+
+
+app.secret_key = _load_or_create_secret()
 
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
