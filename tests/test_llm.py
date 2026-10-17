@@ -54,6 +54,21 @@ def test_parse_response_bad_json_and_bad_verdict():
     assert llm._parse_response('{"verdict": "banana", "summary": "x"}') is None
 
 
+def test_ollama_base_url_with_v1_not_doubled():
+    with mock.patch.dict("os.environ", {
+        "ZEBEBGNA_LLM_PROVIDER": "ollama",
+        "ZEBEBGNA_LLM_BASE_URL": "",
+        "ZEBEBGNA_OLLAMA_URL": "http://localhost:11434/v1",
+    }, clear=False):
+        assert llm._endpoint() == "http://localhost:11434/v1/chat/completions"
+    with mock.patch.dict("os.environ", {
+        "ZEBEBGNA_LLM_PROVIDER": "ollama",
+        "ZEBEBGNA_LLM_BASE_URL": "",
+        "ZEBEBGNA_OLLAMA_URL": "http://localhost:11434",
+    }, clear=False):
+        assert llm._endpoint() == "http://localhost:11434/v1/chat/completions"
+
+
 def test_review_report_happy_path():
     report = _report()
     fake_response = mock.Mock()

@@ -29,11 +29,17 @@ import time
 
 import requests
 
+def _ollama_base():
+    base = os.environ.get(
+        "ZEBEBGNA_OLLAMA_URL", "http://localhost:11434").rstrip("/")
+    # Accept a base that already ends in /v1 (OpenAI-compatible form)
+    # without doubling the path segment.
+    return base if base.endswith("/v1") else base + "/v1"
+
+
 PROVIDERS = {
     "ollama": {
-        "base": lambda: os.environ.get(
-            "ZEBEBGNA_OLLAMA_URL", "http://localhost:11434").rstrip("/")
-        + "/v1",
+        "base": _ollama_base,
         "model": "qwen2.5:7b",
         "key": None,
     },
