@@ -184,6 +184,14 @@ class SecureFetcher:
             raise requests.TooManyRedirects(
                 f"Exceeded {MAX_REDIRECTS} redirects while fetching {url}"
             )
+        if 300 <= resp.status_code < 400:
+            # A redirect that cannot be followed (e.g. one without a
+            # Location header) must not be silently treated as the final
+            # receipt page.
+            raise requests.HTTPError(
+                f"Unfollowable redirect ({resp.status_code}) from {current}",
+                response=resp,
+            )
         resp.raise_for_status()
         return resp
 

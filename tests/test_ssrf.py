@@ -146,6 +146,17 @@ def test_redirect_limit_enforced(monkeypatch):
             sf.get("https://example.com/start")
 
 
+def test_fetcher_rejects_unfollowable_redirect(monkeypatch):
+    # A 3xx response without a Location header cannot be followed and
+    # must not be returned as if it were the final page.
+    sf = SecureFetcher()
+    _public_dns(monkeypatch)
+    landing = FakeResp(is_redirect=False, status_code=302)
+    with mock.patch.object(sf.session, "get", return_value=landing):
+        with pytest.raises(requests.HTTPError):
+            sf.get("https://example.com/start")
+
+
 # ---------------------------------------------------------------- helpers
 
 def test_fetch_pdf_bytes_returns_content():
