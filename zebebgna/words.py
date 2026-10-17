@@ -35,6 +35,8 @@ NOISE_WORDS = {"birr", "birrs", "cents", "sent", "cent", "only", "and",
                "ብርም", "ብሮች"}
 
 _NUMBER_TOKEN_RE = re.compile(r"[a-z\u1200-\u137f'-]+", re.IGNORECASE)
+# "cents"/"ሳንቲም" as standalone words: not inside "percent", etc.
+_CENT_MARKER_RE = re.compile(r"\bcents?\b|\bሳንቲም\b", re.IGNORECASE)
 
 
 def _word_value(token):
@@ -81,12 +83,29 @@ def parse_amount_words(text):
     cleaned = str(text).strip().replace("-", " ").replace("–", " ").replace("—", " ")
     if re.search(r"\d", cleaned):
         # Some receipts mix words and digits (e.g. "1,000 Birr Only").
+        # A trailing cent/santim phrase still applies: "1,000 Birr and
+        # Fifty Cents" is 1000.50, not 1000.
         digits = re.search(r"\d[\d,]*\.?\d*", cleaned)
-        if digits:
-            try:
-                return Decimal(digits.group(0).replace(",", ""))
-            except InvalidOperation:
-                return None
+        if not digits:
+            return None
+        cents = None
+        marker = _CENT_MARKER_RE.search(cleaned, digits.end())
+        if marker:
+            cents_phrase = cleaned[digits.end():marker.start()]
+            cent_digits = re.search(r"\d[\d,]*", cents_phrase)
+            if cent_digits:
+                cents = Decimal(cent_digits.group(0).replace(",", ""))
+            else:
+                cents_words = _NUMBER_TOKEN_RE.findall(cents_phrase.lower())
+                if cents_words:
+                    cents = _parse_number(cents_words)
+        try:
+            amount = Decimal(digits.group(0).replace(",", ""))
+        except InvalidOperation:
+            return None
+        if cents is not None:
+            amount += Decimal(cents) / 100
+        return Decimal(str(amount))
 
     tokens = [t for t in _NUMBER_TOKEN_RE.findall(cleaned.lower()) if t]
     if not tokens:

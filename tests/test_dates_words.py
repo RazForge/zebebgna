@@ -36,6 +36,18 @@ def test_amharic_amount_words_with_santim():
     assert parse_amount_words("ሁለት መቶ ብር ሃያ አምስት ሳንቲም") == Decimal("200.25")
 
 
+def test_amount_words_digits_with_cents():
+    assert parse_amount_words(
+        "1,000 Birr and Fifty Cents Only"
+    ) == Decimal("1000.50")
+    assert parse_amount_words(
+        "ETB 1,000 Birr and 50 Cents"
+    ) == Decimal("1000.50")
+    assert parse_amount_words("1,000 ብር ሃምሳ ሳንቲም") == Decimal("1000.50")
+    # "percent" must not be mistaken for a cents phrase.
+    assert parse_amount_words("1,000 Birr Only, 5 percent service") == 1000
+
+
 def test_amount_words_mixed_digits():
     assert parse_amount_words("ETB 1,000.00 Birr Only") == 1000
     assert parse_amount_words("1500 Birr Only") == 1500
