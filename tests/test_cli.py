@@ -30,7 +30,7 @@ def _fake_report(url):
 
 def test_batch_verifies_and_saves(db):
     with mock.patch(
-        "zebebgna.verify_receipt",
+        "zebebgna.cli.verify_receipt",
         side_effect=lambda *a, **k: _fake_report(a[1]),
     ):
         code = _run_cli(
@@ -47,7 +47,7 @@ def test_batch_reads_file(db, tmp_path):
         encoding="utf-8",
     )
     with mock.patch(
-        "zebebgna.verify_receipt",
+        "zebebgna.cli.verify_receipt",
         side_effect=lambda *a, **k: _fake_report(a[1]),
     ):
         code = _run_cli(["batch", "cbe", "--file", str(urls_file)])
@@ -80,7 +80,7 @@ def test_batch_file_ignores_indented_comments(db, tmp_path):
 
 def test_history_and_feedback_commands(db):
     with mock.patch(
-        "zebebgna.verify_receipt",
+        "zebebgna.cli.verify_receipt",
         side_effect=lambda *a, **k: _fake_report(a[1]),
     ):
         _run_cli(["verify", "cbe", "https://apps.cbe.com.et:100/?id=FT123"])
