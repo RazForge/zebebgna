@@ -27,7 +27,7 @@ zebebgna = ["templates/*.html"]
 Homepage = "https://github.com/RazForge/zebebgna"
 
 [project.optional-dependencies]
-dev = ["pytest", "flake8"]
+dev = ["pytest", "flake8", "qrcode", "reportlab", "zxing-cpp"]
 web = ["flask"]
 bot = ["python-telegram-bot>=22.0"]
 
