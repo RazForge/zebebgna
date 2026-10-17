@@ -136,7 +136,7 @@ the receipt it fetches, and it never disables security checks to make a connecti
   <tr><td>&#128203; History &amp; feedback loop</td><td>Every check can be stored in local SQLite; users mark verdicts correct/wrong and the per-domain feedback nudges future risk scores. A community phishing-domain database (<code>threatdb</code>) raises an error-level signal for reported domains.</td></tr>
   <tr><td>&#128065; Vision / OCR &amp; AI review</td><td>Receipt text can be pasted or uploaded as a PDF/screenshot; <code>scan_fields()</code> extracts structured fields (English and Amharic amounts, Ge&rsquo;ez numerals, Ethiopian calendar dates). An optional OpenAI-compatible review (<code>ZEBEBGNA_LLM_API_KEY</code>) adds a genuine/suspicious verdict; failures degrade silently.</td></tr>
   <tr><td>&#128172; Telegram bot</td><td>Optional bot (<code>python -m zebebgna.bot</code>): <code>/verify</code>, <code>/verifytext</code>, and photo/PDF uploads, all returning the same verdicts.</td></tr>
-  <tr><td>&#128279; Shareable reports</td><td>The web UI offers a <code>/share/&lt;check_id&gt;</code> archived-report link for every stored check.</td></tr>
+  <tr><td>&#128279; Shareable reports</td><td>The web UI offers an archived-report link with an unguessable token (<code>/share/&lt;token&gt;</code>) for every stored check.</td></tr>
   <tr><td>&#9201; Operational tooling</td><td><code>zebebgna watch</code> re-verifies on a schedule, <code>zebebgna backup export|import</code> dumps/restores the database, and <code>zebebgna config show</code> displays the effective configuration.</td></tr>
   <tr><td>&#9889; High performance</td><td>Connection pooling via <code>requests.Session</code>; multithreaded PDF parsing; cached Chrome driver for BOA receipts.</td></tr>
 </table>
@@ -330,9 +330,10 @@ before exposing it beyond your own machine:</p>
 <h2>8.3 History &amp; shareable report links</h2>
 <p>The web UI keeps a history of every check (<code>/history</code>) with thumbs-up/down feedback
 buttons, and offers an archived, read-only <strong>share link</strong>
-(<code>/share/&lt;check_id&gt;</code> &mdash; the "Share" chip on a fresh verdict page). Shared pages
+(<code>/share/&lt;token&gt;</code> &mdash; the "Share" chip on a fresh verdict page). Shared pages
 show the same report without the history/admin chrome, so a verified receipt can be referenced
-later without exposing the whole history.</p>
+later without exposing the whole history. Accounts (<code>zebebgna user add &lt;name&gt;</code>)
+are optional: once one exists the UI requires signing in and history is scoped per account.</p>
 
 <!-- ================= 9. SECURITY CHECKS ================= -->
 <h1>9. Security Checks Reference</h1>

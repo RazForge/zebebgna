@@ -136,9 +136,14 @@ zebebgna verify tele CHQ0FJ403O
 
 ```bash
 pip install -e ".[web]"
+zebebgna user add admin   # optional: require login (skip to stay open)
 python webapp.py
 # Open http://127.0.0.1:5000
 ```
+
+Once at least one account exists the web UI requires signing in, and each
+account sees only its own history. Share links use unguessable tokens. With no
+accounts the UI stays open for local use (`zebebgna user list` shows accounts).
 
 ---
 
