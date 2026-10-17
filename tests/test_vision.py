@@ -90,6 +90,18 @@ def test_scan_zemen_with_amharic_words():
     assert data["Reference No"] == "ZM202309120001"
 
 
+def test_scan_zemen_names_stop_at_line_end():
+    # Pasted multi-line Zemen text: the name captures must not run into
+    # the next field ("Payer account no." / "Recipient account no.").
+    text = (
+        "Payer name: ABEBE BEKELE\nPayer account no.: 0123456789\n"
+        "Recipient name: DAWIT TADESSE\nRecipient account no.: 9876543210\n"
+    )
+    data = scan_fields("zemen", text)
+    assert data["Payer Name"] == "ABEBE BEKELE"
+    assert data["Recipient Name"] == "DAWIT TADESSE"
+
+
 # -- file extraction ------------------------------------------------------------
 
 def test_extract_pdf_text(tmp_path):

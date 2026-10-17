@@ -228,9 +228,9 @@ TEXT_SCANNERS = {
     "zemen": (
         ("Invoice No", r"(?i)Invoice\s*No[.:]?\s*(\d+)"),
         ("Date", r"Date[:\s]+([0-9]{1,2}-[A-Za-z]{3}-[0-9]{4})"),
-        ("Payer Name", r"(?i)Payer\s*name[.:]?\s*([A-Z\s]+)"),
+        ("Payer Name", r"(?i)Payer\s*name[.:]?\s*([A-Za-z][A-Za-z ]*)"),
         ("Payer Account No", r"(?i)Payer\s*account\s*no[.:]?\s*([\d\*()X]+)"),
-        ("Recipient Name", r"(?i)Recipient\s*name[.:]?\s*([A-Za-z\s\.]+)"),
+        ("Recipient Name", r"(?i)Recipient\s*name[.:]?\s*([A-Za-z][A-Za-z .]*)"),
         ("Recipient Account No", r"(?i)Recipient\s*account\s*no[.:]?\s*([\d\*]+)"),
         ("Reference No", r"(?i)Reference\s*No[.:]?\s*([A-Z0-9]+)"),
         ("Transaction Status", r"(?i)Transaction\s*status[.:]?\s*(\w+)"),
