@@ -211,10 +211,15 @@ def _parse_response(text):
         confidence = max(0, min(100, int(confidence)))
     except (TypeError, ValueError):
         confidence = None
+    raw_reasons = payload.get("reasons", [])
+    if isinstance(raw_reasons, str):
+        # Models sometimes return one string instead of a list; wrap it
+        # rather than iterating over its characters.
+        raw_reasons = [raw_reasons]
     return AIVerdict(
         verdict=verdict,
         summary=str(payload.get("summary", "")).strip() or "No summary",
-        reasons=[str(r) for r in payload.get("reasons", []) if str(r).strip()],
+        reasons=[str(r) for r in raw_reasons if str(r).strip()],
         confidence=confidence,
         model=model_name(),
     )

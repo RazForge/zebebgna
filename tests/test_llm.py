@@ -54,6 +54,16 @@ def test_parse_response_bad_json_and_bad_verdict():
     assert llm._parse_response('{"verdict": "banana", "summary": "x"}') is None
 
 
+def test_parse_response_reasons_string_not_split():
+    # A single-string "reasons" value must become one reason, not one
+    # entry per character.
+    verdict = llm._parse_response(
+        '{"verdict": "genuine", "summary": "ok", '
+        '"reasons": "reference matches", "confidence": 80}'
+    )
+    assert verdict.reasons == ["reference matches"]
+
+
 def test_ollama_base_url_with_v1_not_doubled():
     with mock.patch.dict("os.environ", {
         "ZEBEBGNA_LLM_PROVIDER": "ollama",
